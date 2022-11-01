@@ -9,6 +9,12 @@ services:
     ports:
       - "5672:5672"
     restart: always
+  clickhouse:
+    container_name: clickhouse
+    image: clickhouse/clickhouse-server
+    ports:
+      - "8123:8123"
+    restart: always
   postgres:
     container_name: postgres
     image: postgres:15
