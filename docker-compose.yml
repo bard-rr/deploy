@@ -8,12 +8,29 @@ services:
     image: rabbitmq:3.11.2
     ports:
       - "5672:5672"
+    # healthcheck:
+    #   test: rabbitmq-diagnostics -q ping
+    #   interval: 30s
+    #   timeout: 30s
+    #   retries: 3
     restart: always
   clickhouse:
     container_name: clickhouse
     image: clickhouse/clickhouse-server
     ports:
       - "8123:8123"
+    # healthcheck:
+    #   test:
+    #     [
+    #       "CMD",
+    #       "wget",
+    #       "--spider",
+    #       "-q",
+    #       "localhost:8123/ping"
+    #     ]
+    #   interval: 30s
+    #   timeout: 5s
+    #   retries: 3
     restart: always
   postgres:
     container_name: postgres
@@ -25,7 +42,30 @@ services:
       - POSTGRES_PASSWORD=password
     ports:
       - "5432:5432"
+    # healthcheck:
+    #   test: [ "CMD-SHELL", "pg_isready" ]
+    #   interval: 10s
+    #   timeout: 5s
+    #   retries: 5
     restart: always
+  agent-api:
+    container_name: agent-api
+    # totoggle
+    # image: bardrr/agent-api
+    build: ../agent-api/app
+    environment:
+      - PGHOST=postgres
+      - PGPORT=5432
+      - PGUSER=user
+      - PGPASSWORD=password
+      - PGDATABASE=bard
+      - RABBITMQ_HOST=rabbitmq
+      - CLICKHOUSE_HOST=clickhouse
+      - ACCESS_TOKEN_SECRET='26f08d4369fecdcef0d05efd2732dab2dad7aa2357df5af39b180052fa151c9140d5f2e6cb684bf5c21cee7d448074a3b7606cad191ebb977af4d4221c71cd75d6'
+    ports:
+      - "3001:3001"
+    restart: always
+    command: npm run dev
   session_ender:
     container_name: session_ender
     # totoggle
@@ -37,6 +77,7 @@ services:
       - PGUSER=user
       - PGPASSWORD=password
       - PGDATABASE=bard
+      - CLICKHOUSE_HOST=clickhouse
     restart: always
     # totoggle
     command: npm run dev
