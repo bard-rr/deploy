@@ -14,3 +14,15 @@ services:
     ports:
       - "5432:5432"
     restart: always
+  session_ender:
+    container_name: session_ender
+    # totoggle
+    # image: bardrr/session_ender
+    build: ../session_ender
+    environment:
+      - PGHOST=postgres
+      - PGPORT=5432
+      - PGUSER=user
+      - PGPASSWORD=password
+      - PGDATABASE=bard
+    command: npm run dev
