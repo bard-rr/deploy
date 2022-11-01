@@ -9,11 +9,17 @@ services:
     ports:
       - "5672:5672"
     restart: always
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "ping"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
   clickhouse:
     container_name: clickhouse
     image: clickhouse/clickhouse-server
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
     ports:
       - "8123:8123"
     restart: always
