@@ -8,37 +8,28 @@ services:
     image: rabbitmq:3.11.2
     ports:
       - "5672:5672"
-    # healthcheck:
-    #   test: rabbitmq-diagnostics -q ping
-    #   interval: 30s
-    #   timeout: 30s
-    #   retries: 3
     restart: always
+    #wait for rabbit mq to be fully started up
     healthcheck:
-      test: ["CMD", "rabbitmqctl", "ping"]
+      test: ["CMD", "rabbitmqctl", "await_startup"]
       interval: 15s
       timeout: 10s
       retries: 10
   clickhouse:
     container_name: clickhouse
     image: clickhouse/clickhouse-server
+    #ch needs rabbit mq operational to create a rabbit mq table
     depends_on:
       rabbitmq:
         condition: service_healthy
     ports:
       - "8123:8123"
-    # healthcheck:
-    #   test:
-    #     [
-    #       "CMD",
-    #       "wget",
-    #       "--spider",
-    #       "-q",
-    #       "localhost:8123/ping"
-    #     ]
-    #   interval: 30s
-    #   timeout: 5s
-    #   retries: 3
+    #ping clickhouse as a health check
+    healthcheck:
+      test: ["CMD", "wget", "localhost:8123/ping"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
     restart: always
     volumes:
       - ch:/var/lib/clickhouse/
@@ -54,11 +45,6 @@ services:
       - POSTGRES_PASSWORD=password
     ports:
       - "5432:5432"
-    # healthcheck:
-    #   test: [ "CMD-SHELL", "pg_isready" ]
-    #   interval: 10s
-    #   timeout: 5s
-    #   retries: 5
     restart: always
   agent-api:
     container_name: agent-api
@@ -77,15 +63,24 @@ services:
     ports:
       - "3001:3001"
     restart: always
+    depends_on:
+      postgres:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
     command: npm run dev
   session_ender:
     container_name: session_ender
     # totoggle
-    image: bardrr/session_ender
+    image: bardrr/session_ender:latest
     #build: ../session_ender
     depends_on:
-      - postgres
-      - clickhouse
+      postgres:
+        condition: service_started
+      clickhouse:
+        condition: service_healthy
     environment:
       - PGHOST=postgres
       - PGPORT=5432
@@ -100,8 +95,10 @@ services:
     container_name: replayer
     image: bardrr/replayer:latest
     depends_on:
-      - postgres
-      - clickhouse
+      postgres:
+        condition: service_started
+      clickhouse:
+        condition: service_healthy
     restart: always
     environment:
       - PGHOST=postgres
