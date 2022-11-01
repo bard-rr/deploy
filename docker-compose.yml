@@ -1,0 +1,16 @@
+networks:
+  default:
+    name: bard
+
+services:
+  postgres:
+    container_name: postgres
+    image: postgres:15
+    volumes:
+      - ./postgres_initialization_scripts:/docker-entrypoint-initdb.d
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+    ports:
+      - "5432:5432"
+    restart: always
