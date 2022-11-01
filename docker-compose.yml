@@ -3,6 +3,12 @@ networks:
     name: bard
 
 services:
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:3.11.2
+    ports:
+      - "5672:5672"
+    restart: always
   postgres:
     container_name: postgres
     image: postgres:15
@@ -25,4 +31,6 @@ services:
       - PGUSER=user
       - PGPASSWORD=password
       - PGDATABASE=bard
+    restart: always
+    # totoggle
     command: npm run dev
