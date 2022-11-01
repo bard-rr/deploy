@@ -12,9 +12,15 @@ services:
   clickhouse:
     container_name: clickhouse
     image: clickhouse/clickhouse-server
+    depends_on:
+      - rabbitmq
     ports:
       - "8123:8123"
     restart: always
+    volumes:
+      - ch:/var/lib/clickhouse/
+      - ch_logs:/val/log/clickhouse-server/
+      - ./clickhouse_initialization_scripts:/docker-entrypoint-initdb.d
   postgres:
     container_name: postgres
     image: postgres:15
@@ -29,8 +35,11 @@ services:
   session_ender:
     container_name: session_ender
     # totoggle
-    # image: bardrr/session_ender
-    build: ../session_ender
+    image: bardrr/session_ender
+    #build: ../session_ender
+    depends_on:
+      - postgres
+      - clickhouse
     environment:
       - PGHOST=postgres
       - PGPORT=5432
@@ -39,4 +48,22 @@ services:
       - PGDATABASE=bard
     restart: always
     # totoggle
-    command: npm run dev
+    #command: npm run dev
+  replayer:
+    container_name: replayer
+    image: bardrr/replayer:latest
+    depends_on:
+      - postgres
+      - clickhouse
+    restart: always
+    environment:
+      - PGHOST=postgres
+      - PGPORT=5432
+      - PGUSER=user
+      - PGPASSWORD=password
+      - PGDATABASE=bard
+    ports:
+      - "3003:3003"
+volumes:
+  ch:
+  ch_logs:
