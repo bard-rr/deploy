@@ -7,7 +7,8 @@ CREATE TABLE pending_sessions (
   start_time bigint NOT NULL,
   origin_host text NOT NULL,
   most_recent_event_time bigint NOT NULL,
-  error_count integer NOT NULL DEFAULT 0
+  error_count integer NOT NULL DEFAULT 0,
+  max_idle_time integer NOT NULL
 );
 
 CREATE TABLE funnels (
