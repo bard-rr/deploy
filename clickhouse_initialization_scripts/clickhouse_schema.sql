@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS eventDb.sessionTable
     endTime UInt64,
     lengthMs UInt64,
     date Date,
-    originHost String,
+    appName String,
     errorCount UInt64
   )
 ENGINE = MergeTree()
