@@ -40,6 +40,7 @@ services:
     image: postgres:15
     volumes:
       - ./postgres_initialization_scripts:/docker-entrypoint-initdb.d
+      - pgdata:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=password
@@ -111,3 +112,4 @@ services:
 volumes:
   ch:
   ch_logs:
+  pgdata:
