@@ -5,7 +5,7 @@ CREATE DATABASE bard;
 CREATE TABLE pending_sessions (
   session_id text PRIMARY KEY,
   start_time bigint NOT NULL,
-  origin_host text NOT NULL,
+  app_name text NOT NULL,
   most_recent_event_time bigint NOT NULL,
   error_count integer NOT NULL DEFAULT 0,
   max_idle_time integer NOT NULL
