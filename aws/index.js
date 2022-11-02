@@ -18,6 +18,47 @@ const main = async () => {
     clusterName: "bard-cluster",
   });
   console.log("created cluster");
+  const taskDef = await client.registerTaskDefinition({
+    family: "postgres-task",
+    containerDefinitions: [
+      {
+        image: "postgres:15",
+        name: "postgres",
+        //TODO: need a better value for this
+        memoryReservation: 10,
+        portMappings: [
+          {
+            containerPort: 5432,
+            hostPort: 5432,
+          },
+        ],
+      },
+    ],
+    //these next pieces are all required by fargate
+    networkMode: "awsvpc",
+    runtimePlatform: {
+      cpuArchitecture: "ARM64",
+      operatingSystemFamily: "LINUX",
+    },
+    cpu: "256",
+    memory: "512",
+  });
+  console.log("created the postgres task");
+
+  let output = await client.runTask({
+    taskDefinition: "postgres-task",
+    cluster: "bard-cluster",
+    count: 1,
+    launchType: "FARGATE",
+    //required by fargate: TODO
+    networkConfiguration: {
+      awsvpcConfiguration: {
+        subnets: [],
+        securityGroups: [],
+      },
+    },
+  });
+  console.log("executed the postgres task");
 };
 
 main();
