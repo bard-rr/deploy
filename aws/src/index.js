@@ -6,7 +6,7 @@ import dotenv from "dotenv";
 // import { makeClickhouseService } from "./services/clickhouseService.js";
 //import { makeAgentApiService } from "./services/agentApiService.js";
 import { makeReplayerService } from "./services/replayerService.js";
-import { makeSessionEnderService } from "./services/sessionEnderService.js";
+//import { makeSessionEnderService } from "./services/sessionEnderService.js";
 //import { waitFor } from "./tasks/utils.js";
 
 const main = async () => {
@@ -84,11 +84,11 @@ const main = async () => {
     // await makeRabbitmqService(ecs, "fs-01293ef4db092ef8e", "rabbitmq-task");
     // await makeClickhouseService(ecs, "fs-01293ef4db092ef8e", "clickhouse-task");
     //await makeAgentApiService(ecs, "fs-01293ef4db092ef8e", "agent-api-task");
-    await makeSessionEnderService(
-      ecs,
-      "fs-01293ef4db092ef8e",
-      "session_ender-task"
-    );
+    // await makeSessionEnderService(
+    //   ecs,
+    //   "fs-01293ef4db092ef8e",
+    //   "session_ender-task"
+    // );
     await makeReplayerService(ecs, "fs-01293ef4db092ef8e", "replayer-task");
 
     console.log("\n\nscript executed successfully! 🎉 🎉 🎉\n\n");

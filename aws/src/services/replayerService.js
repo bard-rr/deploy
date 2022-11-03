@@ -29,6 +29,15 @@ export const makeReplayerService = async (ecs, fileSystemId, taskName) => {
           { name: "PGPASSWORD", value: "password" },
           { name: "PGDATABASE", value: "bard" },
         ],
+        logConfiguration: {
+          logDriver: "awslogs",
+          secretOptions: null,
+          options: {
+            "awslogs-group": "/ecs/test_logged_task",
+            "awslogs-region": "us-east-1",
+            "awslogs-stream-prefix": "ecs",
+          },
+        },
       },
     ],
     //these next pieces are all required by fargate
@@ -38,6 +47,20 @@ export const makeReplayerService = async (ecs, fileSystemId, taskName) => {
     },
     cpu: "256",
     memory: "1024",
+    requiresAttributes: [
+      {
+        targetId: null,
+        targetType: null,
+        value: null,
+        name: "com.amazonaws.ecs.capability.logging-driver.awslogs",
+      },
+      {
+        targetId: null,
+        targetType: null,
+        value: null,
+        name: "ecs.capability.execution-role-awslogs",
+      },
+    ],
   });
   console.log("created the replayer task");
 
@@ -105,6 +128,6 @@ export const makeReplayerService = async (ecs, fileSystemId, taskName) => {
       tasks: [taskList.taskArns[0]],
       cluster: "bard-cluster",
     });
-    console.log("output");
+    console.log("output", output);
   }, 90 * 1000);
 };
