@@ -1,6 +1,6 @@
 import { waitFor } from "./utils.js";
 
-export const makePostgresTask = async (ecs, fileSystem, taskName) => {
+export const makePostgresService = async (ecs, fileSystemId, taskName) => {
   await ecs.registerTaskDefinition({
     family: taskName,
     //TODO: Does this task exist by default?
@@ -42,13 +42,13 @@ export const makePostgresTask = async (ecs, fileSystem, taskName) => {
       {
         name: "initPg",
         efsVolumeConfiguration: {
-          fileSystemId: fileSystem.FileSystemId,
+          fileSystemId,
         },
       },
       {
         name: "persistPg",
         efsVolumeConfiguration: {
-          fileSystemId: fileSystem.FileSystemId,
+          fileSystemId,
         },
       },
     ],
@@ -62,12 +62,20 @@ export const makePostgresTask = async (ecs, fileSystem, taskName) => {
   });
   console.log("created the postgres task");
 
-  let runTaskOutput = await ecs.runTask({
-    taskDefinition: "postgres-task",
+  let serviceOutput = await ecs.createService({
+    taskDefinition: taskName,
+    serviceName: "postgres-service",
     cluster: "bard-cluster",
-    count: 1,
+    desiredCount: 1,
     launchType: "FARGATE",
-    //required by fargate: TODO. got these from the console. How can I get them programatically?
+    schedulingStrategy: "REPLICA",
+    deploymentConfiguration: {
+      maximumPercent: 200,
+      minimumHealthyPercent: 100,
+      deploymentCircuitBreaker: {
+        enable: false,
+      },
+    },
     networkConfiguration: {
       awsvpcConfiguration: {
         subnets: ["subnet-08e97a8a4d3098617"],
@@ -76,16 +84,53 @@ export const makePostgresTask = async (ecs, fileSystem, taskName) => {
       },
     },
   });
-  console.log("executed the postgres task");
-  console.log("waiting for postgres task");
+  // let runTaskOutput = await ecs.runTask({
+  //   taskDefinition: "postgres-task",
+  //   cluster: "bard-cluster",
+  //   count: 1,
+  //   launchType: "FARGATE",
+  //   //required by fargate: TODO. got these from the console. How can I get them programatically?
+  //   networkConfiguration: {
+  //     awsvpcConfiguration: {
+  //       subnets: ["subnet-08e97a8a4d3098617"],
+  //       securityGroups: ["sg-0824cc4158587a789"],
+  //       assignPublicIp: "ENABLED",
+  //     },
+  //   },
+  // });
+  console.log("created the postgres service");
+  console.log("waiting for the postgres service to start");
+  await waitFor(
+    ecs.describeServices.bind(ecs),
+    {
+      services: [serviceOutput.service.serviceArn],
+      cluster: "bard-cluster",
+    },
+    "serviceActive",
+    "ACTIVE"
+  );
+  console.log("postgres service started successfully!");
+  console.log("waiting for task to be created");
+  let taskList = await waitFor(
+    ecs.listTasks.bind(ecs),
+    {
+      cluster: "bard-cluster",
+      serviceName: "postgres-service",
+      maxResults: 1,
+    },
+    "taskCreated",
+    true
+  );
+  console.log("task created!");
+  console.log("waiting for the postgres task to start.");
   await waitFor(
     ecs.describeTasks.bind(ecs),
     {
-      tasks: [runTaskOutput.tasks[0].taskArn],
+      tasks: [taskList.taskArns[0]],
       cluster: "bard-cluster",
     },
     "taskRunning",
     "RUNNING"
   );
-  console.log("postgres started successfully!");
+  console.log("postgres task running!");
 };

@@ -13,6 +13,12 @@ export const waitFor = async (fn, fnArgs, valType, desiredVal, depth = 0) => {
     case "taskRunning":
       resVal = result.tasks[0].lastStatus;
       break;
+    case "serviceActive":
+      resVal = result.services[0].status;
+      break;
+    case "taskCreated":
+      resVal = result.taskArns.length !== 0;
+      break;
 
     default:
       return;
@@ -22,7 +28,7 @@ export const waitFor = async (fn, fnArgs, valType, desiredVal, depth = 0) => {
     //we have what we want
     return result;
   } else {
-    if (depth > 20) {
+    if (depth > 15 || resVal === "STOPPED") {
       throw result;
     }
     console.log(`Waiting for ${2 ** depth * 10} ms`);
