@@ -32,6 +32,15 @@ export const makeClickhouseService = async (ecs, fileSystemId, taskName) => {
             containerPath: "/bitnami/clickhouse",
           },
         ],
+        logConfiguration: {
+          logDriver: "awslogs",
+          secretOptions: null,
+          options: {
+            "awslogs-group": "/ecs/test_logged_task",
+            "awslogs-region": "us-east-1",
+            "awslogs-stream-prefix": "ecs",
+          },
+        },
         //environment: [{ name: "ALLOW_EMPTY_PASSWORD", value: "yes" }],
       },
     ],
@@ -56,6 +65,20 @@ export const makeClickhouseService = async (ecs, fileSystemId, taskName) => {
     },
     cpu: "256",
     memory: "1024",
+    requiresAttributes: [
+      {
+        targetId: null,
+        targetType: null,
+        value: null,
+        name: "com.amazonaws.ecs.capability.logging-driver.awslogs",
+      },
+      {
+        targetId: null,
+        targetType: null,
+        value: null,
+        name: "ecs.capability.execution-role-awslogs",
+      },
+    ],
   });
   console.log("created the clickhouse task");
 

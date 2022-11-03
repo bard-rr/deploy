@@ -36,6 +36,15 @@ export const makeAgentApiService = async (ecs, fileSystemId, taskName) => {
               "'26f08d4369fecdcef0d05efd2732dab2dad7aa2357df5af39b180052fa151c9140d5f2e6cb684bf5c21cee7d448074a3b7606cad191ebb977af4d4221c71cd75d6'",
           },
         ],
+        logConfiguration: {
+          logDriver: "awslogs",
+          secretOptions: null,
+          options: {
+            "awslogs-group": "/ecs/test_logged_task",
+            "awslogs-region": "us-east-1",
+            "awslogs-stream-prefix": "ecs",
+          },
+        },
       },
     ],
     //these next pieces are all required by fargate
@@ -45,6 +54,20 @@ export const makeAgentApiService = async (ecs, fileSystemId, taskName) => {
     },
     cpu: "256",
     memory: "1024",
+    requiresAttributes: [
+      {
+        targetId: null,
+        targetType: null,
+        value: null,
+        name: "com.amazonaws.ecs.capability.logging-driver.awslogs",
+      },
+      {
+        targetId: null,
+        targetType: null,
+        value: null,
+        name: "ecs.capability.execution-role-awslogs",
+      },
+    ],
   });
   console.log("created the agent-api task");
 
