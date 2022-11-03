@@ -4,6 +4,9 @@ import dotenv from "dotenv";
 import { makePostgresService } from "./services/postgresService.js";
 import { makeRabbitmqService } from "./services/rabbitmqService.js";
 import { makeClickhouseService } from "./services/clickhouseService.js";
+import { makeAgentApiService } from "./services/agentApiService.js";
+import { makeReplayerService } from "./services/replayerService.js";
+import { makeSessionEnderService } from "./services/sessionEnderService.js";
 //import { waitFor } from "./tasks/utils.js";
 
 const main = async () => {
@@ -34,6 +37,9 @@ const main = async () => {
       },
     });
     // console.log("created an ecs client");
+
+    // //TODO: uncomment the code that makes the filesystem and cluster
+
     // //FARGATE and FARGATE_SPOT cap providers should be associated with the ecs client
     // //if you want to use fargate:
     // //https://docs.aws.amazon.com/AmazonECS/latest/developerguide/fargate-capacity-providers.html
@@ -67,16 +73,23 @@ const main = async () => {
     //   2
     // );
     // console.log("mount target initialized");
+    // await ecs.createCluster({
+    //   capacityProviders: ["FARGATE", "FARGATE_SPOT"],
+    //   clusterName: "bard-cluster",
+    // });
+    // console.log("created cluster");
 
-    await ecs.createCluster({
-      capacityProviders: ["FARGATE", "FARGATE_SPOT"],
-      clusterName: "bard-cluster",
-    });
-    console.log("created cluster");
     //hard code file system during dev things
     await makePostgresService(ecs, "fs-01293ef4db092ef8e", "postgres-task");
     await makeRabbitmqService(ecs, "fs-01293ef4db092ef8e", "rabbitmq-task");
     await makeClickhouseService(ecs, "fs-01293ef4db092ef8e", "clickhouse-task");
+    await makeAgentApiService(ecs, "fs-01293ef4db092ef8e", "agent-api-task");
+    await makeReplayerService(ecs, "fs-01293ef4db092ef8e", "replayer-task");
+    await makeSessionEnderService(
+      ecs,
+      "fs-01293ef4db092ef8e",
+      "session_ender-task"
+    );
 
     console.log("\n\nscript executed successfully! 🎉 🎉 🎉\n\n");
   } catch (error) {
