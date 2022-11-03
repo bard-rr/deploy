@@ -1,6 +1,6 @@
 import { waitFor } from "./utils.js";
 
-export const makeRabbitmqTask = async (ecs, fileSystem, taskName) => {
+export const makeRabbitmqService = async (ecs, fileSystemId, taskName) => {
   await ecs.registerTaskDefinition({
     family: taskName,
     //TODO: Does this task exist by default?
@@ -9,7 +9,7 @@ export const makeRabbitmqTask = async (ecs, fileSystem, taskName) => {
     requiresCompatibilities: ["FARGATE"],
     containerDefinitions: [
       {
-        image: "public.ecr.aws/docker/library/rabbitmq:3.11.2-alpine",
+        image: "rabbitmq:3.11.2",
         name: "rabbitmq",
         //TODO: need a better value for this
         memoryReservation: null,
@@ -17,8 +17,8 @@ export const makeRabbitmqTask = async (ecs, fileSystem, taskName) => {
         entryPoint: [],
         portMappings: [
           {
-            containerPort: 5432,
-            hostPort: 5432,
+            containerPort: 5672,
+            hostPort: 5672,
             protocol: "tcp",
           },
         ],
@@ -38,12 +38,20 @@ export const makeRabbitmqTask = async (ecs, fileSystem, taskName) => {
   });
   console.log("created the rabbitmq task");
 
-  let runTaskOutput = await ecs.runTask({
+  let serviceOutput = await ecs.createService({
     taskDefinition: taskName,
+    serviceName: "rabbitmq-service",
     cluster: "bard-cluster",
-    count: 1,
+    desiredCount: 1,
     launchType: "FARGATE",
-    //required by fargate: TODO. got these from the console. How can I get them programatically?
+    schedulingStrategy: "REPLICA",
+    deploymentConfiguration: {
+      maximumPercent: 200,
+      minimumHealthyPercent: 100,
+      deploymentCircuitBreaker: {
+        enable: false,
+      },
+    },
     networkConfiguration: {
       awsvpcConfiguration: {
         subnets: ["subnet-08e97a8a4d3098617"],
@@ -52,16 +60,39 @@ export const makeRabbitmqTask = async (ecs, fileSystem, taskName) => {
       },
     },
   });
-  console.log("executed the rabbitmq task");
-  console.log("waiting for rabbitmq task");
+  console.log("created the rabbitmq service");
+  console.log("waiting for the rabbitmq service to start");
+  await waitFor(
+    ecs.describeServices.bind(ecs),
+    {
+      services: [serviceOutput.service.serviceArn],
+      cluster: "bard-cluster",
+    },
+    "serviceActive",
+    "ACTIVE"
+  );
+  console.log("rabbitmq service started successfully!");
+  console.log("waiting for task to be created");
+  let taskList = await waitFor(
+    ecs.listTasks.bind(ecs),
+    {
+      cluster: "bard-cluster",
+      serviceName: "rabbitmq-service",
+      maxResults: 1,
+    },
+    "taskCreated",
+    true
+  );
+  console.log("task created!");
+  console.log("waiting for the rabbitmq task to start.");
   await waitFor(
     ecs.describeTasks.bind(ecs),
     {
-      tasks: [runTaskOutput.tasks[0].taskArn],
+      tasks: [taskList.taskArns[0]],
       cluster: "bard-cluster",
     },
     "taskRunning",
     "RUNNING"
   );
-  console.log("rabbitmq started successfully!");
+  console.log("rabbitmq task running!");
 };

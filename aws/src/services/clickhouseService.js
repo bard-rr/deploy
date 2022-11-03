@@ -1,6 +1,6 @@
 import { waitFor } from "./utils.js";
 
-export const makeClickhouseTask = async (ecs, fileSystem, taskName) => {
+export const makeClickhouseService = async (ecs, fileSystemId, taskName) => {
   await ecs.registerTaskDefinition({
     family: taskName,
     //TODO: Does this task exist by default?
@@ -9,7 +9,7 @@ export const makeClickhouseTask = async (ecs, fileSystem, taskName) => {
     requiresCompatibilities: ["FARGATE"],
     containerDefinitions: [
       {
-        image: "public.ecr.aws/bitnami/clickhouse:latest",
+        image: "clickhouse/clickhouse-server",
         name: "clickhouse",
         //TODO: need a better value for this
         memoryReservation: null,
@@ -17,8 +17,8 @@ export const makeClickhouseTask = async (ecs, fileSystem, taskName) => {
         entryPoint: [],
         portMappings: [
           {
-            containerPort: 5432,
-            hostPort: 5432,
+            containerPort: 8123,
+            hostPort: 8123,
             protocol: "tcp",
           },
         ],
@@ -29,32 +29,23 @@ export const makeClickhouseTask = async (ecs, fileSystem, taskName) => {
           },
           {
             sourceVolume: "persistCh",
-            containerPath: "/var/lib/clickhouse/",
-          },
-          {
-            sourceVolume: "persistChLogs",
-            containerPath: "/va;/log/clickhouse-server/",
+            containerPath: "/bitnami/clickhouse",
           },
         ],
+        //environment: [{ name: "ALLOW_EMPTY_PASSWORD", value: "yes" }],
       },
     ],
     volumes: [
       {
         name: "initCh",
         efsVolumeConfiguration: {
-          fileSystemId: fileSystem.FileSystemId,
+          fileSystemId,
         },
       },
       {
         name: "persistCh",
         efsVolumeConfiguration: {
-          fileSystemId: fileSystem.FileSystemId,
-        },
-      },
-      {
-        name: "persistChLogs",
-        efsVolumeConfiguration: {
-          fileSystemId: fileSystem.FileSystemId,
+          fileSystemId,
         },
       },
     ],
@@ -68,12 +59,20 @@ export const makeClickhouseTask = async (ecs, fileSystem, taskName) => {
   });
   console.log("created the clickhouse task");
 
-  let runTaskOutput = await ecs.runTask({
+  let serviceOutput = await ecs.createService({
     taskDefinition: taskName,
+    serviceName: "clickhouse-service",
     cluster: "bard-cluster",
-    count: 1,
+    desiredCount: 1,
     launchType: "FARGATE",
-    //required by fargate: TODO. got these from the console. How can I get them programatically?
+    schedulingStrategy: "REPLICA",
+    deploymentConfiguration: {
+      maximumPercent: 200,
+      minimumHealthyPercent: 100,
+      deploymentCircuitBreaker: {
+        enable: false,
+      },
+    },
     networkConfiguration: {
       awsvpcConfiguration: {
         subnets: ["subnet-08e97a8a4d3098617"],
@@ -82,16 +81,39 @@ export const makeClickhouseTask = async (ecs, fileSystem, taskName) => {
       },
     },
   });
-  console.log("executed the clickhouse task");
-  console.log("waiting for clickhouse task");
+  console.log("created the clickhouse service");
+  console.log("waiting for the clickhouse service to start");
+  await waitFor(
+    ecs.describeServices.bind(ecs),
+    {
+      services: [serviceOutput.service.serviceArn],
+      cluster: "bard-cluster",
+    },
+    "serviceActive",
+    "ACTIVE"
+  );
+  console.log("clickhouse service started successfully!");
+  console.log("waiting for task to be created");
+  let taskList = await waitFor(
+    ecs.listTasks.bind(ecs),
+    {
+      cluster: "bard-cluster",
+      serviceName: "clickhouse-service",
+      maxResults: 1,
+    },
+    "taskCreated",
+    true
+  );
+  console.log("task created!");
+  console.log("waiting for the clickhouse task to start.");
   await waitFor(
     ecs.describeTasks.bind(ecs),
     {
-      tasks: [runTaskOutput.tasks[0].taskArn],
+      tasks: [taskList.taskArns[0]],
       cluster: "bard-cluster",
     },
     "taskRunning",
     "RUNNING"
   );
-  console.log("clickhouse started successfully!");
+  console.log("clickhouse task running!");
 };

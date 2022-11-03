@@ -1,9 +1,9 @@
 import { ECS } from "@aws-sdk/client-ecs";
 import { EFS } from "@aws-sdk/client-efs";
 import dotenv from "dotenv";
-import { makePostgresService } from "./tasks/postgresTask.js";
-//import { makeClickhouseTask } from "./tasks/clickhouseTask.js";
-//import { makeRabbitmqTask } from "./tasks/rabbitmqTask.js";
+import { makePostgresService } from "./services/postgresService.js";
+import { makeRabbitmqService } from "./services/rabbitmqService.js";
+import { makeClickhouseService } from "./services/clickhouseService.js";
 //import { waitFor } from "./tasks/utils.js";
 
 const main = async () => {
@@ -68,15 +68,15 @@ const main = async () => {
     // );
     // console.log("mount target initialized");
 
-    // await ecs.createCluster({
-    //   capacityProviders: ["FARGATE", "FARGATE_SPOT"],
-    //   clusterName: "bard-cluster",
-    // });
-    // console.log("created cluster");
+    await ecs.createCluster({
+      capacityProviders: ["FARGATE", "FARGATE_SPOT"],
+      clusterName: "bard-cluster",
+    });
+    console.log("created cluster");
     //hard code file system during dev things
     await makePostgresService(ecs, "fs-01293ef4db092ef8e", "postgres-task");
-    //await makeRabbitmqTask(ecs, fileSystem, "rabbitmq-task");
-    //await makeClickhouseTask(ecs, fileSystem, "clickhouse-task");
+    await makeRabbitmqService(ecs, "fs-01293ef4db092ef8e", "rabbitmq-task");
+    await makeClickhouseService(ecs, "fs-01293ef4db092ef8e", "clickhouse-task");
 
     console.log("\n\nscript executed successfully! 🎉 🎉 🎉\n\n");
   } catch (error) {

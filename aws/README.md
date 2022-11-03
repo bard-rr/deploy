@@ -32,3 +32,12 @@ I've got the default security group configured to accept connections from anywhe
 RIGHT!!! Looks like this works!
 
 Ah, one more problem... I need to wait for the mount target to be created before I kick off the task. Otherwise, it won't work.
+
+Ok, so now I've got rabbit and postgres working... but now I can't get clickhouse to start: I keep getting this error: `Essential container in task exited`
+
+Things I've tried
+
+- just using the bitnami container from aws ecr
+- bitnami container with the env var allowing empty passwords set
+- docker image from `hub.docker.com/r/clickhouse/clickhouse-server`. Couldn't pull the container.
+- huh, just using clickhouse/clickhouse-server worked just fine

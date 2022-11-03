@@ -9,7 +9,7 @@ export const makePostgresService = async (ecs, fileSystemId, taskName) => {
     requiresCompatibilities: ["FARGATE"],
     containerDefinitions: [
       {
-        image: "public.ecr.aws/docker/library/postgres:15-alpine",
+        image: "postgres:15",
         name: "postgres",
         //TODO: need a better value for this
         memoryReservation: null,
@@ -84,20 +84,6 @@ export const makePostgresService = async (ecs, fileSystemId, taskName) => {
       },
     },
   });
-  // let runTaskOutput = await ecs.runTask({
-  //   taskDefinition: "postgres-task",
-  //   cluster: "bard-cluster",
-  //   count: 1,
-  //   launchType: "FARGATE",
-  //   //required by fargate: TODO. got these from the console. How can I get them programatically?
-  //   networkConfiguration: {
-  //     awsvpcConfiguration: {
-  //       subnets: ["subnet-08e97a8a4d3098617"],
-  //       securityGroups: ["sg-0824cc4158587a789"],
-  //       assignPublicIp: "ENABLED",
-  //     },
-  //   },
-  // });
   console.log("created the postgres service");
   console.log("waiting for the postgres service to start");
   await waitFor(
