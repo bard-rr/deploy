@@ -1,7 +1,9 @@
 import { ECS } from "@aws-sdk/client-ecs";
 import { EFS } from "@aws-sdk/client-efs";
 import dotenv from "dotenv";
+import { makeClickhouseTask } from "./tasks/clickhouseTask.js";
 import { makePostgresTask } from "./tasks/postgresTask.js";
+import { makeRabbitmqTask } from "./tasks/rabbitmqTask.js";
 import { waitFor } from "./tasks/utils.js";
 
 const main = async () => {
@@ -71,7 +73,11 @@ const main = async () => {
       clusterName: "bard-cluster",
     });
     console.log("created cluster");
-    await makePostgresTask(ecs, "postgres-task");
+    await makeRabbitmqTask(ecs, fileSystem, "rabbitmq-task");
+    await makePostgresTask(ecs, fileSystem, "postgres-task");
+    await makeClickhouseTask(ecs, fileSystem, "clickhouse-task");
+
+    console.log("\n\nscript executed successfully! 🎉 🎉 🎉\n\n");
   } catch (error) {
     console.log("error: cleaning up", error);
     //clean up everything so that I don't need to later on.
