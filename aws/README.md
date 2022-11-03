@@ -30,3 +30,5 @@ Looks like security groups are an EC2 feature. Also looks like the default one i
 I've got the default security group configured to accept connections from anywhere. So it looks like as long as I run the tasks with the default security group and have the EFS mount targets use the default security group, I should be good (right?)
 
 RIGHT!!! Looks like this works!
+
+Ah, one more problem... I need to wait for the mount target to be created before I kick off the task. Otherwise, it won't work.

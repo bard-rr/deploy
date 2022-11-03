@@ -2,6 +2,36 @@ import { ECS, waitUntilTasksRunning } from "@aws-sdk/client-ecs";
 import { EFS } from "@aws-sdk/client-efs";
 import dotenv from "dotenv";
 
+const wait = (ms) => new Promise((res) => setTimeout(res, ms));
+
+const waitFor = async (fn, fnArgs, valType, desiredVal, depth = 0) => {
+  const result = await fn(fnArgs);
+  let resVal;
+  switch (valType) {
+    case "fileSystemAvailable":
+      resVal = result.FileSystems[0].LifeCycleState;
+      break;
+    case "mountTargetAvailable":
+      resVal = result.MountTargets[0].LifeCycleState;
+      break;
+
+    default:
+      return;
+  }
+  if (resVal === desiredVal) {
+    console.log("resVal", resVal, "desired Val", desiredVal);
+    //we have what we want
+    return result;
+  } else {
+    if (depth > 20) {
+      throw result;
+    }
+    console.log(`Waiting for ${2 ** depth * 10} ms`);
+    await wait(2 ** depth * 10);
+    return await waitFor(fn, fnArgs, valType, desiredVal, depth + 1);
+  }
+};
+
 const waitForTask = async (taskName) => {
   let output = await waitUntilTasksRunning(
     {
@@ -14,19 +44,6 @@ const waitForTask = async (taskName) => {
     }
   );
   console.log("wait output", output);
-};
-
-const fileSystemIsReady = async (fileSystem, efs) => {
-  return new Promise((res, rej) => {
-    setTimeout(async () => {
-      console.log("checking file system status");
-      let output = await efs.describeFileSystems({
-        FileSystemId: fileSystem.FileSystemId,
-      });
-      console.log("describe file system output", output);
-      res(output);
-    }, 10 * 1000); //TODO: be more intelligent about this.
-  });
 };
 
 const main = async () => {
@@ -51,13 +68,35 @@ const main = async () => {
   //if you want to use fargate:
   //https://docs.aws.amazon.com/AmazonECS/latest/developerguide/fargate-capacity-providers.html
   const fileSystem = await efs.createFileSystem({});
-  console.log("created file system!", fileSystem);
-  const fileSystemStatus = await fileSystemIsReady(fileSystem, efs);
-  await efs.createMountTarget({
+  console.log("created file system!");
+  const fileSystemStatus = await waitFor(
+    efs.describeFileSystems.bind(efs),
+    {
+      FileSystemId: fileSystem.FileSystemId,
+    },
+    "fileSystemAvailable",
+    "available"
+  );
+  console.log("file system initialized");
+
+  const mountTarget = await efs.createMountTarget({
     FileSystemId: fileSystem.FileSystemId,
     SubnetId: "subnet-08e97a8a4d3098617", //TODO: How to get this?
     SecurityGroups: ["sg-0824cc4158587a789"], //TODO: How to get this?
   });
+  console.log("mount target created");
+  const mountTargetStatus = await waitFor(
+    efs.describeMountTargets.bind(efs),
+    {
+      FileSystemId: fileSystem.FileSystemId,
+      MaxItems: 1,
+    },
+    "mountTargetAvailable",
+    "available",
+    2
+  );
+  console.log("mount target initialized");
+
   const cluster = await ecs.createCluster({
     capacityProviders: ["FARGATE", "FARGATE_SPOT"],
     clusterName: "bard-cluster",
