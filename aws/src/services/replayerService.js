@@ -98,4 +98,13 @@ export const makeReplayerService = async (ecs, fileSystemId, taskName) => {
     "RUNNING"
   );
   console.log("replayer task running!");
+
+  //wait 1.5 mins and pull the task to find out what failed
+  setTimeout(async () => {
+    let output = await ecs.describeTasks({
+      tasks: [taskList.taskArns[0]],
+      cluster: "bard-cluster",
+    });
+    console.log("output");
+  }, 90 * 1000);
 };
