@@ -6,12 +6,13 @@ services:
   rabbitmq:
     container_name: rabbitmq
     image: rabbitmq:3.11.2
+    user: rabbitmq
     ports:
       - "5672:5672"
-    restart: always
+    # restart: always
     #wait for rabbit mq to be fully started up
     healthcheck:
-      test: ["CMD", "rabbitmqctl", "await_startup"]
+      test: [ "CMD", "rabbitmqctl", "await_startup" ]
       interval: 15s
       timeout: 10s
       retries: 10
@@ -26,27 +27,27 @@ services:
       - "8123:8123"
     #ping clickhouse as a health check
     healthcheck:
-      test: ["CMD", "wget", "localhost:8123/ping"]
+      test: [ "CMD", "wget", "localhost:8123/ping" ]
       interval: 15s
       timeout: 10s
       retries: 10
-    restart: always
-    volumes:
-      - ch:/var/lib/clickhouse/
-      - ch_logs:/val/log/clickhouse-server/
-      - ./clickhouse_initialization_scripts:/docker-entrypoint-initdb.d
+    # restart: always
+    # volumes:
+    #   - ch:/var/lib/clickhouse/
+    #   - ch_logs:/val/log/clickhouse-server/
+    #   - ./clickhouse_initialization_scripts:/docker-entrypoint-initdb.d
   postgres:
     container_name: postgres
     image: postgres:15
-    volumes:
-      - ./postgres_initialization_scripts:/docker-entrypoint-initdb.d
-      - pgdata:/var/lib/postgresql/data
+    # volumes:
+    #   - ./postgres_initialization_scripts:/docker-entrypoint-initdb.d
+    #   - pgdata:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=password
     ports:
       - "5432:5432"
-    restart: always
+    # restart: always
   agent-api:
     container_name: agent-api
     # totoggle
@@ -63,7 +64,7 @@ services:
       - ACCESS_TOKEN_SECRET='26f08d4369fecdcef0d05efd2732dab2dad7aa2357df5af39b180052fa151c9140d5f2e6cb684bf5c21cee7d448074a3b7606cad191ebb977af4d4221c71cd75d6'
     ports:
       - "3001:3001"
-    restart: always
+    # restart: always
     depends_on:
       postgres:
         condition: service_started
@@ -89,7 +90,7 @@ services:
       - PGPASSWORD=password
       - PGDATABASE=bard
       - CLICKHOUSE_HOST=clickhouse
-    restart: always
+    # restart: always
     # totoggle
     #command: npm run dev
   replayer:
@@ -100,16 +101,18 @@ services:
         condition: service_started
       clickhouse:
         condition: service_healthy
-    restart: always
+    # restart: always
     environment:
       - PGHOST=postgres
       - PGPORT=5432
       - PGUSER=user
       - PGPASSWORD=password
       - PGDATABASE=bard
+      - REPLAYER_API_HOST=replayer
     ports:
       - "3003:3003"
-volumes:
-  ch:
-  ch_logs:
-  pgdata:
+
+# volumes:
+#   ch:
+#   ch_logs:
+#   pgdata:
