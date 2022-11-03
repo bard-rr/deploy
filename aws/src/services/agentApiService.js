@@ -9,7 +9,7 @@ export const makeAgentApiService = async (ecs, fileSystemId, taskName) => {
     requiresCompatibilities: ["FARGATE"],
     containerDefinitions: [
       {
-        image: "bardrr/agent-api",
+        image: "bardrr/agent-api:latest",
         name: "agent-api",
         //TODO: need a better value for this
         memoryReservation: null,

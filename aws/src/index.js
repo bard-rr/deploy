@@ -1,10 +1,10 @@
 import { ECS } from "@aws-sdk/client-ecs";
 import { EFS } from "@aws-sdk/client-efs";
 import dotenv from "dotenv";
-import { makePostgresService } from "./services/postgresService.js";
-import { makeRabbitmqService } from "./services/rabbitmqService.js";
-import { makeClickhouseService } from "./services/clickhouseService.js";
-import { makeAgentApiService } from "./services/agentApiService.js";
+// import { makePostgresService } from "./services/postgresService.js";
+// import { makeRabbitmqService } from "./services/rabbitmqService.js";
+// import { makeClickhouseService } from "./services/clickhouseService.js";
+//import { makeAgentApiService } from "./services/agentApiService.js";
 import { makeReplayerService } from "./services/replayerService.js";
 import { makeSessionEnderService } from "./services/sessionEnderService.js";
 //import { waitFor } from "./tasks/utils.js";
@@ -80,16 +80,16 @@ const main = async () => {
     // console.log("created cluster");
 
     //hard code file system during dev things
-    await makePostgresService(ecs, "fs-01293ef4db092ef8e", "postgres-task");
-    await makeRabbitmqService(ecs, "fs-01293ef4db092ef8e", "rabbitmq-task");
-    await makeClickhouseService(ecs, "fs-01293ef4db092ef8e", "clickhouse-task");
-    await makeAgentApiService(ecs, "fs-01293ef4db092ef8e", "agent-api-task");
-    await makeReplayerService(ecs, "fs-01293ef4db092ef8e", "replayer-task");
+    // await makePostgresService(ecs, "fs-01293ef4db092ef8e", "postgres-task");
+    // await makeRabbitmqService(ecs, "fs-01293ef4db092ef8e", "rabbitmq-task");
+    // await makeClickhouseService(ecs, "fs-01293ef4db092ef8e", "clickhouse-task");
+    //await makeAgentApiService(ecs, "fs-01293ef4db092ef8e", "agent-api-task");
     await makeSessionEnderService(
       ecs,
       "fs-01293ef4db092ef8e",
       "session_ender-task"
     );
+    await makeReplayerService(ecs, "fs-01293ef4db092ef8e", "replayer-task");
 
     console.log("\n\nscript executed successfully! 🎉 🎉 🎉\n\n");
   } catch (error) {

@@ -9,7 +9,7 @@ export const makeReplayerService = async (ecs, fileSystemId, taskName) => {
     requiresCompatibilities: ["FARGATE"],
     containerDefinitions: [
       {
-        image: "bardrr/replayer",
+        image: "bardrr/replayer:latest",
         name: "replayer",
         //TODO: need a better value for this
         memoryReservation: null,

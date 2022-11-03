@@ -9,7 +9,7 @@ export const makeSessionEnderService = async (ecs, fileSystemId, taskName) => {
     requiresCompatibilities: ["FARGATE"],
     containerDefinitions: [
       {
-        image: "bardrr/session_ender",
+        image: "bardrr/session_ender:latest",
         name: "session_ender",
         //TODO: need a better value for this
         memoryReservation: null,

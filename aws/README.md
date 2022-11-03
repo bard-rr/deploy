@@ -41,3 +41,9 @@ Things I've tried
 - bitnami container with the env var allowing empty passwords set
 - docker image from `hub.docker.com/r/clickhouse/clickhouse-server`. Couldn't pull the container.
 - huh, just using clickhouse/clickhouse-server worked just fine
+
+### Up Next:
+
+include commands to start the applications in the task for each bard piece
+
+Having trouble connecting to my things now... where did marcin find that url he was using earlier...?
