@@ -101,7 +101,7 @@ export const makePostgresService = async (ecs, fileSystemId, taskName) => {
     },
     networkConfiguration: {
       awsvpcConfiguration: {
-        subnets: ["subnet-08e97a8a4d3098617"],
+        subnets: ["subnet-07a5d4615304da5e5"],
         securityGroups: ["sg-0824cc4158587a789"],
         assignPublicIp: "ENABLED",
       },
