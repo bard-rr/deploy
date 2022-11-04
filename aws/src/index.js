@@ -108,38 +108,41 @@ const main = async () => {
       serviceDiscovery,
       namespaceId
     );
-    // await makeRabbitmqService(
-    //   ecs,
-    //   "fs-01293ef4db092ef8e",
-    //   "rabbitmq-task",
-    //   serviceDiscovery,
-    //   namespaceId
-    // );
-    // await makeClickhouseService(
-    //   ecs,
-    //   "fs-01293ef4db092ef8e",
-    //   "clickhouse-task",
-    //   NAMESPACE_NAME
-    // );
-    // await makeAgentApiService(
-    //   ecs,
-    //   "fs-01293ef4db092ef8e",
-    //   "agent-api-task",
-    //   serviceDiscovery,
-    //   namespaceId
-    // );
-    // await makeSessionEnderService(
-    //   ecs,
-    //   "fs-01293ef4db092ef8e",
-    //   "session_ender-task",
-    //   NAMESPACE_NAME
-    // );
-    // await makeReplayerService(
-    //   ecs,
-    //   "fs-01293ef4db092ef8e",
-    //   "replayer-task",
-    //   NAMESPACE_NAME
-    // );
+    await makeRabbitmqService(
+      ecs,
+      "fs-01293ef4db092ef8e",
+      "rabbitmq-task",
+      serviceDiscovery,
+      namespaceId
+    );
+    await makeClickhouseService(
+      ecs,
+      "fs-01293ef4db092ef8e",
+      "clickhouse-task",
+      serviceDiscovery,
+      namespaceId
+    );
+    await makeAgentApiService(
+      ecs,
+      "fs-01293ef4db092ef8e",
+      "agent-api-task",
+      serviceDiscovery,
+      namespaceId
+    );
+    await makeSessionEnderService(
+      ecs,
+      "fs-01293ef4db092ef8e",
+      "session_ender-task",
+      serviceDiscovery,
+      namespaceId
+    );
+    await makeReplayerService(
+      ecs,
+      "fs-01293ef4db092ef8e",
+      "replayer-task",
+      serviceDiscovery,
+      namespaceId
+    );
 
     console.log("\n\nscript executed successfully! 🎉 🎉 🎉\n\n");
   } catch (error) {
