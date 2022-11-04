@@ -1,4 +1,6 @@
+import dotenv from "dotenv";
 import { waitFor } from "./utils.js";
+dotenv.config();
 
 export const makeAgentApiService = async (ecs, fileSystemId, taskName) => {
   await ecs.registerTaskDefinition({
@@ -41,7 +43,7 @@ export const makeAgentApiService = async (ecs, fileSystemId, taskName) => {
           secretOptions: null,
           options: {
             "awslogs-group": "/ecs/test_logged_task",
-            "awslogs-region": "us-east-1",
+            "awslogs-region": process.env.REGION,
             "awslogs-stream-prefix": "ecs",
           },
         },
@@ -87,8 +89,8 @@ export const makeAgentApiService = async (ecs, fileSystemId, taskName) => {
     },
     networkConfiguration: {
       awsvpcConfiguration: {
-        subnets: ["subnet-08e97a8a4d3098617"],
-        securityGroups: ["sg-0824cc4158587a789"],
+        subnets: [process.env.SUBNET],
+        securityGroups: [process.env.SECURITY_GROUP],
         assignPublicIp: "ENABLED",
       },
     },
