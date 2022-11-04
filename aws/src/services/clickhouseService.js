@@ -16,7 +16,7 @@ export const makeClickhouseService = async (
     requiresCompatibilities: ["FARGATE"],
     containerDefinitions: [
       {
-        image: "clickhouse/clickhouse-server",
+        image: "bardrr/clickhouse:latest",
         name: "clickhouse",
         //TODO: need a better value for this
         memoryReservation: null,
@@ -31,10 +31,6 @@ export const makeClickhouseService = async (
         ],
         mountPoints: [
           {
-            sourceVolume: "initCh",
-            containerPath: "/docker-entrypoint-initdb.d",
-          },
-          {
             sourceVolume: "persistCh",
             containerPath: "/var/lib/clickhouse/",
           },
@@ -48,16 +44,9 @@ export const makeClickhouseService = async (
             "awslogs-stream-prefix": "ecs",
           },
         },
-        //environment: [{ name: "ALLOW_EMPTY_PASSWORD", value: "yes" }],
       },
     ],
     volumes: [
-      {
-        name: "initCh",
-        efsVolumeConfiguration: {
-          fileSystemId,
-        },
-      },
       {
         name: "persistCh",
         efsVolumeConfiguration: {

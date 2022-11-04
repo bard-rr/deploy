@@ -57,39 +57,39 @@ const main = async () => {
       },
     });
     console.log("created an ecs client");
-    //FARGATE and FARGATE_SPOT cap providers should be associated with the ecs client
-    //if you want to use fargate:
-    //https://docs.aws.amazon.com/AmazonECS/latest/developerguide/fargate-capacity-providers.html
-    // const fileSystem = await efs.createFileSystem({});
-    // let FileSystemId = fileSystem.FileSystemId;
-    // console.log("created file system!");
-    // await waitFor(
-    //   efs.describeFileSystems.bind(efs),
-    //   {
-    //     FileSystemId,
-    //   },
-    //   "fileSystemAvailable",
-    //   "available"
-    // );
-    // console.log("file system initialized");
+    // FARGATE and FARGATE_SPOT cap providers should be associated with the ecs client
+    // if you want to use fargate:
+    // https://docs.aws.amazon.com/AmazonECS/latest/developerguide/fargate-capacity-providers.html
+    const fileSystem = await efs.createFileSystem({});
+    let FileSystemId = fileSystem.FileSystemId;
+    console.log("created file system!");
+    await waitFor(
+      efs.describeFileSystems.bind(efs),
+      {
+        FileSystemId,
+      },
+      "fileSystemAvailable",
+      "available"
+    );
+    console.log("file system initialized");
 
-    // await efs.createMountTarget({
-    //   FileSystemId,
-    //   SubnetId: "subnet-08e97a8a4d3098617", //TODO: How to get this?
-    //   SecurityGroups: ["sg-0d105c4a0fc827061"], //TODO: How to get this?
-    // });
-    // console.log("mount target created");
-    // await waitFor(
-    //   efs.describeMountTargets.bind(efs),
-    //   {
-    //     FileSystemId,
-    //     MaxItems: 1,
-    //   },
-    //   "mountTargetAvailable",
-    //   "available",
-    //   2
-    // );
-    // console.log("mount target initialized");
+    await efs.createMountTarget({
+      FileSystemId,
+      SubnetId: "subnet-08e97a8a4d3098617", //TODO: How to get this?
+      SecurityGroups: ["sg-0d105c4a0fc827061"], //TODO: How to get this?
+    });
+    console.log("mount target created");
+    await waitFor(
+      efs.describeMountTargets.bind(efs),
+      {
+        FileSystemId,
+        MaxItems: 1,
+      },
+      "mountTargetAvailable",
+      "available",
+      2
+    );
+    console.log("mount target initialized");
     await ecs.createCluster({
       capacityProviders: ["FARGATE", "FARGATE_SPOT"],
       clusterName: "bard-cluster",
@@ -99,46 +99,46 @@ const main = async () => {
     // //hard code file system during dev things
     await makePostgresService(
       ecs,
-      "fs-00153c0d4f3befc95",
+      FileSystemId,
       "postgres-task",
       serviceDiscovery,
       namespaceId
     );
-    // await makeReplayerService(
-    //   ecs,
-    //   "fs-00153c0d4f3befc95",
-    //   "replayer-task",
-    //   serviceDiscovery,
-    //   namespaceId
-    // );
-    // await makeRabbitmqService(
-    //   ecs,
-    //   "fs-00153c0d4f3befc95",
-    //   "rabbitmq-task",
-    //   serviceDiscovery,
-    //   namespaceId
-    // );
-    // await makeClickhouseService(
-    //   ecs,
-    //   "fs-00153c0d4f3befc95",
-    //   "clickhouse-task",
-    //   serviceDiscovery,
-    //   namespaceId
-    // );
-    // await makeAgentApiService(
-    //   ecs,
-    //   "fs-00153c0d4f3befc95",
-    //   "agent-api-task",
-    //   serviceDiscovery,
-    //   namespaceId
-    // );
-    // await makeSessionEnderService(
-    //   ecs,
-    //   "fs-00153c0d4f3befc95",
-    //   "session_ender-task",
-    //   serviceDiscovery,
-    //   namespaceId
-    // );
+    await makeReplayerService(
+      ecs,
+      FileSystemId,
+      "replayer-task",
+      serviceDiscovery,
+      namespaceId
+    );
+    await makeRabbitmqService(
+      ecs,
+      FileSystemId,
+      "rabbitmq-task",
+      serviceDiscovery,
+      namespaceId
+    );
+    await makeClickhouseService(
+      ecs,
+      FileSystemId,
+      "clickhouse-task",
+      serviceDiscovery,
+      namespaceId
+    );
+    await makeAgentApiService(
+      ecs,
+      FileSystemId,
+      "agent-api-task",
+      serviceDiscovery,
+      namespaceId
+    );
+    await makeSessionEnderService(
+      ecs,
+      FileSystemId,
+      "session_ender-task",
+      serviceDiscovery,
+      namespaceId
+    );
 
     console.log("\n\nscript executed successfully! 🎉 🎉 🎉\n\n");
   } catch (error) {
