@@ -1,6 +1,12 @@
-import { waitFor } from "./utils.js";
+import { getOrCreateDiscoveryService, waitFor } from "./utils.js";
 
-export const makeRabbitmqService = async (ecs, fileSystemId, taskName) => {
+export const makeRabbitmqService = async (
+  ecs,
+  fileSystemId,
+  taskName,
+  serviceDiscoveryClient,
+  namespaceId
+) => {
   await ecs.registerTaskDefinition({
     family: taskName,
     //TODO: Does this task exist by default?
@@ -61,9 +67,16 @@ export const makeRabbitmqService = async (ecs, fileSystemId, taskName) => {
   });
   console.log("created the rabbitmq task");
 
+  let discoveryServiceArn = await getOrCreateDiscoveryService(
+    serviceDiscoveryClient,
+    namespaceId,
+    "rabbitmq"
+  );
+  console.log("rabbit discovery service arn obtained", discoveryServiceArn);
+
   let serviceOutput = await ecs.createService({
     taskDefinition: taskName,
-    serviceName: "rabbitmq-service",
+    serviceName: "rabbitmq",
     cluster: "bard-cluster",
     desiredCount: 1,
     launchType: "FARGATE",
@@ -82,6 +95,11 @@ export const makeRabbitmqService = async (ecs, fileSystemId, taskName) => {
         assignPublicIp: "ENABLED",
       },
     },
+    serviceRegistries: [
+      {
+        registryArn: discoveryServiceArn,
+      },
+    ],
   });
   console.log("created the rabbitmq service");
   console.log("waiting for the rabbitmq service to start");
@@ -100,7 +118,7 @@ export const makeRabbitmqService = async (ecs, fileSystemId, taskName) => {
     ecs.listTasks.bind(ecs),
     {
       cluster: "bard-cluster",
-      serviceName: "rabbitmq-service",
+      serviceName: "rabbitmq",
       maxResults: 1,
     },
     "taskCreated",

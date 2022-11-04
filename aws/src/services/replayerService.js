@@ -23,11 +23,12 @@ export const makeReplayerService = async (ecs, fileSystemId, taskName) => {
           },
         ],
         environment: [
-          { name: "PGHOST", value: "postgres" },
+          { name: "PGHOST", value: "postgres.bard" },
           { name: "PGPORT", value: "5432" },
           { name: "PGUSER", value: "user" },
           { name: "PGPASSWORD", value: "password" },
           { name: "PGDATABASE", value: "bard" },
+          { name: "CLICKHOUSE_HOST", value: "clickhouse.bard" },
         ],
         logConfiguration: {
           logDriver: "awslogs",
@@ -121,13 +122,4 @@ export const makeReplayerService = async (ecs, fileSystemId, taskName) => {
     "RUNNING"
   );
   console.log("replayer task running!");
-
-  //wait 1.5 mins and pull the task to find out what failed
-  setTimeout(async () => {
-    let output = await ecs.describeTasks({
-      tasks: [taskList.taskArns[0]],
-      cluster: "bard-cluster",
-    });
-    console.log("output", output);
-  }, 90 * 1000);
 };

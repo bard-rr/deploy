@@ -36,3 +36,45 @@ export const waitFor = async (fn, fnArgs, valType, desiredVal, depth = 0) => {
     return await waitFor(fn, fnArgs, valType, desiredVal, depth + 1);
   }
 };
+
+export const getOrCreateDiscoveryService = async (
+  serviceDiscovery,
+  namespaceId,
+  serviceName
+) => {
+  console.log(`searching for existing discovery services named ${serviceName}`);
+  let existingServices = await serviceDiscovery.listServices({
+    MaxResults: 10,
+    Filters: [
+      {
+        Name: "NAMESPACE_ID",
+        Values: [namespaceId],
+      },
+    ],
+  });
+  //console.log("existing services", existingServices);
+  let wantedService = existingServices.Services.find(
+    (service) => service.Name === serviceName
+  );
+  //console.log("wanted service", wantedService);
+  if (wantedService) {
+    console.log(`found existing discovery service for ${serviceName}`);
+    return wantedService.Arn;
+  } else {
+    console.log(`no discovery service found for ${serviceName}. creating one.`);
+    let newService = await serviceDiscovery.createService({
+      Name: serviceName,
+      NamespaceId: namespaceId,
+      DnsConfig: {
+        RoutingPolicy: "WEIGHTED",
+        DnsRecords: [
+          {
+            Type: "A",
+            TTL: 300,
+          },
+        ],
+      },
+    });
+    return newService.Service.Arn;
+  }
+};

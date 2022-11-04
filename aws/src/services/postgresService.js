@@ -1,6 +1,12 @@
-import { waitFor } from "./utils.js";
+import { getOrCreateDiscoveryService, waitFor } from "./utils.js";
 
-export const makePostgresService = async (ecs, fileSystemId, taskName) => {
+export const makePostgresService = async (
+  ecs,
+  fileSystemId,
+  taskName,
+  serviceDiscoveryClient,
+  namespaceId
+) => {
   await ecs.registerTaskDefinition({
     family: taskName,
     //TODO: Does this task exist by default?
@@ -85,9 +91,17 @@ export const makePostgresService = async (ecs, fileSystemId, taskName) => {
   });
   console.log("created the postgres task");
 
+  let discoveryServiceArn = await getOrCreateDiscoveryService(
+    serviceDiscoveryClient,
+    namespaceId,
+    "postgres"
+  );
+
+  console.log("postgres discovery service Arn obtained", discoveryServiceArn);
+
   let serviceOutput = await ecs.createService({
     taskDefinition: taskName,
-    serviceName: "postgres-service",
+    serviceName: "postgres",
     cluster: "bard-cluster",
     desiredCount: 1,
     launchType: "FARGATE",
@@ -106,6 +120,11 @@ export const makePostgresService = async (ecs, fileSystemId, taskName) => {
         assignPublicIp: "ENABLED",
       },
     },
+    serviceRegistries: [
+      {
+        registryArn: discoveryServiceArn,
+      },
+    ],
   });
   console.log("created the postgres service");
   console.log("waiting for the postgres service to start");
@@ -124,7 +143,7 @@ export const makePostgresService = async (ecs, fileSystemId, taskName) => {
     ecs.listTasks.bind(ecs),
     {
       cluster: "bard-cluster",
-      serviceName: "postgres-service",
+      serviceName: "postgres",
       maxResults: 1,
     },
     "taskCreated",

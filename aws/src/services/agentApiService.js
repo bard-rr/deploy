@@ -1,6 +1,12 @@
-import { waitFor } from "./utils.js";
+import { getOrCreateDiscoveryService, waitFor } from "./utils.js";
 
-export const makeAgentApiService = async (ecs, fileSystemId, taskName) => {
+export const makeAgentApiService = async (
+  ecs,
+  fileSystemId,
+  taskName,
+  serviceDiscoveryClient,
+  namespaceId
+) => {
   await ecs.registerTaskDefinition({
     family: taskName,
     //TODO: Does this task exist by default?
@@ -23,13 +29,13 @@ export const makeAgentApiService = async (ecs, fileSystemId, taskName) => {
           },
         ],
         environment: [
-          { name: "PGHOST", value: "postgres" },
+          { name: "PGHOST", value: "postgres.bard" },
           { name: "PGPORT", value: "5432" },
           { name: "PGUSER", value: "user" },
           { name: "PGPASSWORD", value: "password" },
           { name: "PGDATABASE", value: "bard" },
-          { name: "RABBITMQ_HOST", value: "rabbitmq" },
-          { name: "CLICKHOUSE_HOST", value: "clickhouse" },
+          { name: "RABBITMQ_HOST", value: "rabbitmq.bard" },
+          { name: "CLICKHOUSE_HOST", value: "clickhouse.bard" },
           {
             name: "ACCESS_TOKEN_SECRET",
             value:
@@ -71,9 +77,16 @@ export const makeAgentApiService = async (ecs, fileSystemId, taskName) => {
   });
   console.log("created the agent-api task");
 
+  let discoveryServiceArn = await getOrCreateDiscoveryService(
+    serviceDiscoveryClient,
+    namespaceId,
+    "agent-api"
+  );
+  console.log("agent-api discovery service arn obtained", discoveryServiceArn);
+
   let serviceOutput = await ecs.createService({
     taskDefinition: taskName,
-    serviceName: "agent-api-service",
+    serviceName: "agent-api",
     cluster: "bard-cluster",
     desiredCount: 1,
     launchType: "FARGATE",
@@ -92,6 +105,11 @@ export const makeAgentApiService = async (ecs, fileSystemId, taskName) => {
         assignPublicIp: "ENABLED",
       },
     },
+    serviceRegistries: [
+      {
+        registryArn: discoveryServiceArn,
+      },
+    ],
   });
   console.log("created the agent-api-service");
   console.log("waiting for the agent-api-service to start");
@@ -110,7 +128,7 @@ export const makeAgentApiService = async (ecs, fileSystemId, taskName) => {
     ecs.listTasks.bind(ecs),
     {
       cluster: "bard-cluster",
-      serviceName: "agent-api-service",
+      serviceName: "agent-api",
       maxResults: 1,
     },
     "taskCreated",

@@ -3,7 +3,8 @@ import { waitFor } from "./utils.js";
 export const makeClickhouseService = async (ecs, fileSystemId, taskName) => {
   await ecs.registerTaskDefinition({
     family: taskName,
-    //TODO: Does this task exist by default?
+    //TODO: Does this task exist by default? It does not.
+    //https://docs.aws.amazon.com/AmazonECS/latest/developerguide/Welcome.html
     executionRoleArn: "ecsTaskExecutionRole",
     compatabilities: ["EC2", "FARGATE"],
     requiresCompatibilities: ["FARGATE"],
