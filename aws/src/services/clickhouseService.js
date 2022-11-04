@@ -84,7 +84,12 @@ export const makeClickhouseService = async (ecs, fileSystemId, taskName) => {
 
   let serviceOutput = await ecs.createService({
     taskDefinition: taskName,
-    serviceName: "clickhouse-service",
+    serviceRegistries: [
+      {
+        registryArn: "arn:aws:servicediscovery:us-east-1:855374076712:service/srv-v4vby67rnthp22na",
+      }
+    ],
+    serviceName: "clickhouse",
     cluster: "bard-cluster",
     desiredCount: 1,
     launchType: "FARGATE",
@@ -121,7 +126,7 @@ export const makeClickhouseService = async (ecs, fileSystemId, taskName) => {
     ecs.listTasks.bind(ecs),
     {
       cluster: "bard-cluster",
-      serviceName: "clickhouse-service",
+      serviceName: "clickhouse",
       maxResults: 1,
     },
     "taskCreated",

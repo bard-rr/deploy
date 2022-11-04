@@ -73,7 +73,12 @@ export const makeAgentApiService = async (ecs, fileSystemId, taskName) => {
 
   let serviceOutput = await ecs.createService({
     taskDefinition: taskName,
-    serviceName: "agent-api-service",
+    serviceRegistries: [
+      {
+        registryArn: "arn:aws:servicediscovery:us-east-1:855374076712:service/srv-gn4gty3hkgsnxh6k",
+      }
+    ],
+    serviceName: "agent-api",
     cluster: "bard-cluster",
     desiredCount: 1,
     launchType: "FARGATE",
@@ -110,7 +115,7 @@ export const makeAgentApiService = async (ecs, fileSystemId, taskName) => {
     ecs.listTasks.bind(ecs),
     {
       cluster: "bard-cluster",
-      serviceName: "agent-api-service",
+      serviceName: "agent-api",
       maxResults: 1,
     },
     "taskCreated",

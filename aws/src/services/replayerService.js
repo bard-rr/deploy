@@ -66,7 +66,12 @@ export const makeReplayerService = async (ecs, fileSystemId, taskName) => {
 
   let serviceOutput = await ecs.createService({
     taskDefinition: taskName,
-    serviceName: "replayer-service",
+    serviceRegistries: [
+      {
+        registryArn: "arn:aws:servicediscovery:us-east-1:855374076712:service/srv-zcrw3r5lhjyyg4tu",
+      }
+    ],
+    serviceName: "replayer",
     cluster: "bard-cluster",
     desiredCount: 1,
     launchType: "FARGATE",
@@ -103,7 +108,7 @@ export const makeReplayerService = async (ecs, fileSystemId, taskName) => {
     ecs.listTasks.bind(ecs),
     {
       cluster: "bard-cluster",
-      serviceName: "replayer-service",
+      serviceName: "replayer",
       maxResults: 1,
     },
     "taskCreated",

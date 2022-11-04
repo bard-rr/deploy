@@ -60,7 +60,12 @@ export const makeSessionEnderService = async (ecs, fileSystemId, taskName) => {
 
   let serviceOutput = await ecs.createService({
     taskDefinition: taskName,
-    serviceName: "session_ender-service",
+    serviceRegistries: [
+      {
+        registryArn: "arn:aws:servicediscovery:us-east-1:855374076712:service/srv-xpucodcscnrnvo3p",
+      }
+    ],
+    serviceName: "session_ender",
     cluster: "bard-cluster",
     desiredCount: 1,
     launchType: "FARGATE",
@@ -97,7 +102,7 @@ export const makeSessionEnderService = async (ecs, fileSystemId, taskName) => {
     ecs.listTasks.bind(ecs),
     {
       cluster: "bard-cluster",
-      serviceName: "session_ender-service",
+      serviceName: "session_ender",
       maxResults: 1,
     },
     "taskCreated",

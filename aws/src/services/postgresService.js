@@ -89,7 +89,12 @@ export const makePostgresService = async (ecs, fileSystemId, taskName) => {
 
   let serviceOutput = await ecs.createService({
     taskDefinition: taskName,
-    serviceName: "postgres-service",
+    serviceRegistries: [
+      {
+        registryArn: "arn:aws:servicediscovery:us-east-1:855374076712:service/srv-byeac3ahujissudz",
+      }
+    ],
+    serviceName: "postgres",
     cluster: "bard-cluster",
     desiredCount: 1,
     launchType: "FARGATE",
@@ -126,7 +131,7 @@ export const makePostgresService = async (ecs, fileSystemId, taskName) => {
     ecs.listTasks.bind(ecs),
     {
       cluster: "bard-cluster",
-      serviceName: "postgres-service",
+      serviceName: "postgres",
       maxResults: 1,
     },
     "taskCreated",

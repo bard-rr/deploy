@@ -63,7 +63,12 @@ export const makeRabbitmqService = async (ecs, fileSystemId, taskName) => {
 
   let serviceOutput = await ecs.createService({
     taskDefinition: taskName,
-    serviceName: "rabbitmq-service",
+    serviceRegistries: [
+      {
+        registryArn: "arn:aws:servicediscovery:us-east-1:855374076712:service/srv-bwl77smjs22fg4np",
+      }
+    ],
+    serviceName: "rabbitmq",
     cluster: "bard-cluster",
     desiredCount: 1,
     launchType: "FARGATE",
@@ -100,7 +105,7 @@ export const makeRabbitmqService = async (ecs, fileSystemId, taskName) => {
     ecs.listTasks.bind(ecs),
     {
       cluster: "bard-cluster",
-      serviceName: "rabbitmq-service",
+      serviceName: "rabbitmq",
       maxResults: 1,
     },
     "taskCreated",
