@@ -29,7 +29,7 @@ export const makeClickhouseService = async (ecs, fileSystemId, taskName) => {
           },
           {
             sourceVolume: "persistCh",
-            containerPath: "/bitnami/clickhouse",
+            containerPath: "/var/lib/clickhouse/",
           },
         ],
         logConfiguration: {
