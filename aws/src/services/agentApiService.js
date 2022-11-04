@@ -23,13 +23,13 @@ export const makeAgentApiService = async (ecs, fileSystemId, taskName) => {
           },
         ],
         environment: [
-          { name: "PGHOST", value: "postgres" },
+          { name: "PGHOST", value: "postgres.bard" },
           { name: "PGPORT", value: "5432" },
           { name: "PGUSER", value: "user" },
           { name: "PGPASSWORD", value: "password" },
           { name: "PGDATABASE", value: "bard" },
-          { name: "RABBITMQ_HOST", value: "rabbitmq" },
-          { name: "CLICKHOUSE_HOST", value: "clickhouse" },
+          { name: "RABBITMQ_HOST", value: "rabbitmq.bard" },
+          { name: "CLICKHOUSE_HOST", value: "clickhouse.bard" },
           {
             name: "ACCESS_TOKEN_SECRET",
             value:

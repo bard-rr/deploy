@@ -23,7 +23,7 @@ export const makeReplayerService = async (ecs, fileSystemId, taskName) => {
           },
         ],
         environment: [
-          { name: "PGHOST", value: "postgres" },
+          { name: "PGHOST", value: "postgres.bard" },
           { name: "PGPORT", value: "5432" },
           { name: "PGUSER", value: "user" },
           { name: "PGPASSWORD", value: "password" },

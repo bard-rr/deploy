@@ -16,12 +16,12 @@ export const makeSessionEnderService = async (ecs, fileSystemId, taskName) => {
         command: [],
         entryPoint: [],
         environment: [
-          { name: "PGHOST", value: "postgres" },
+          { name: "PGHOST", value: "postgres.bard" },
           { name: "PGPORT", value: "5432" },
           { name: "PGUSER", value: "user" },
           { name: "PGPASSWORD", value: "password" },
           { name: "PGDATABASE", value: "bard" },
-          { name: "CLICKHOUSE_HOST", value: "clickhouse" },
+          { name: "CLICKHOUSE_HOST", value: "clickhouse.bard" },
         ],
         logConfiguration: {
           logDriver: "awslogs",
