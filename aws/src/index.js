@@ -36,7 +36,7 @@ const main = async () => {
     //     secretAccessKey: process.env.AWS_SECRET_KEY,
     //   },
     // });
-    // console.log("created an ecs client");
+    console.log("created an ecs client");
 
     // //TODO: uncomment the code that makes the filesystem and cluster
 
@@ -80,16 +80,16 @@ const main = async () => {
     console.log("created cluster");
 
     //hard code file system during dev things
-    await makePostgresService(ecs, "fs-0b160bb7cc9db7aba", "postgres-task");
-    await makeRabbitmqService(ecs, "fs-0b160bb7cc9db7aba", "rabbitmq-task");
-    await makeClickhouseService(ecs, "fs-0b160bb7cc9db7aba", "clickhouse-task");
-    await makeAgentApiService(ecs, "fs-0b160bb7cc9db7aba", "agent-api-task");
+    await makePostgresService(ecs, "fs-0a10ed3c392fc4bf3", "postgres-task");
+    await makeRabbitmqService(ecs, "fs-0a10ed3c392fc4bf3", "rabbitmq-task");
+    await makeClickhouseService(ecs, "fs-0a10ed3c392fc4bf3", "clickhouse-task");
+    await makeAgentApiService(ecs, "fs-0a10ed3c392fc4bf3", "agent-api-task");
     await makeSessionEnderService(
       ecs,
-      "fs-0b160bb7cc9db7aba",
+      "fs-0a10ed3c392fc4bf3",
       "session_ender-task"
     );
-    await makeReplayerService(ecs, "fs-0b160bb7cc9db7aba", "replayer-task");
+    await makeReplayerService(ecs, "fs-0a10ed3c392fc4bf3", "replayer-task");
 
     console.log("\n\nscript executed successfully! 🎉 🎉 🎉\n\n");
   } catch (error) {
@@ -98,7 +98,7 @@ const main = async () => {
     if (fileSystem) {
       console.log("cleaning up file system");
       await efs.deleteFileSystem({
-        FileSystemId: "fs-0b160bb7cc9db7aba",
+        FileSystemId: "fs-0a10ed3c392fc4bf3",
       });
     }
 
