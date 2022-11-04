@@ -40,6 +40,8 @@ export const makePostgresService = async (ecs, fileSystemId, taskName) => {
           logDriver: "awslogs",
           secretOptions: null,
           options: {
+            // totoggle
+            // "awslogs-create-group": "true",
             "awslogs-group": "/ecs/test_logged_task",
             "awslogs-region": "us-east-1",
             "awslogs-stream-prefix": "ecs",
