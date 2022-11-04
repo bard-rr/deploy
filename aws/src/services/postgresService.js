@@ -9,7 +9,8 @@ export const makePostgresService = async (ecs, fileSystemId, taskName) => {
     requiresCompatibilities: ["FARGATE"],
     containerDefinitions: [
       {
-        image: "postgres:15",
+        // image: "postgres:15",
+        image: "bardrr/postgres",
         name: "postgres",
         //TODO: need a better value for this
         memoryReservation: null,
@@ -27,10 +28,10 @@ export const makePostgresService = async (ecs, fileSystemId, taskName) => {
           { name: "POSTGRES_PASSWORD", value: "password" },
         ],
         mountPoints: [
-          {
-            sourceVolume: "initPg",
-            containerPath: "/docker-entrypoint-initdb.d",
-          },
+          // {
+          //   sourceVolume: "initPg",
+          //   containerPath: "/docker-entrypoint-initdb.d",
+          // },
           {
             sourceVolume: "persistPg",
             containerPath: "/var/lib/postgresql/data",
@@ -50,12 +51,12 @@ export const makePostgresService = async (ecs, fileSystemId, taskName) => {
       },
     ],
     volumes: [
-      {
-        name: "initPg",
-        efsVolumeConfiguration: {
-          fileSystemId,
-        },
-      },
+      // {
+      //   name: "initPg",
+      //   efsVolumeConfiguration: {
+      //     fileSystemId,
+      //   },
+      // },
       {
         name: "persistPg",
         efsVolumeConfiguration: {
