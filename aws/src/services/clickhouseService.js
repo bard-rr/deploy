@@ -1,15 +1,22 @@
-import { waitFor } from "./utils.js";
+import { getOrCreateDiscoveryService, waitFor } from "./utils.js";
 
-export const makeClickhouseService = async (ecs, fileSystemId, taskName) => {
+export const makeClickhouseService = async (
+  ecs,
+  fileSystemId,
+  taskName,
+  serviceDiscoveryClient,
+  namespaceId
+) => {
   await ecs.registerTaskDefinition({
     family: taskName,
-    //TODO: Does this task exist by default?
+    //TODO: Does this task exist by default? It does not.
+    //https://docs.aws.amazon.com/AmazonECS/latest/developerguide/Welcome.html
     executionRoleArn: "ecsTaskExecutionRole",
     compatabilities: ["EC2", "FARGATE"],
     requiresCompatibilities: ["FARGATE"],
     containerDefinitions: [
       {
-        image: "clickhouse/clickhouse-server",
+        image: "bardrr/clickhouse:latest",
         name: "clickhouse",
         //TODO: need a better value for this
         memoryReservation: null,
@@ -24,12 +31,8 @@ export const makeClickhouseService = async (ecs, fileSystemId, taskName) => {
         ],
         mountPoints: [
           {
-            sourceVolume: "initCh",
-            containerPath: "/docker-entrypoint-initdb.d",
-          },
-          {
             sourceVolume: "persistCh",
-            containerPath: "/bitnami/clickhouse",
+            containerPath: "/var/lib/clickhouse/",
           },
         ],
         logConfiguration: {
@@ -41,16 +44,9 @@ export const makeClickhouseService = async (ecs, fileSystemId, taskName) => {
             "awslogs-stream-prefix": "ecs",
           },
         },
-        //environment: [{ name: "ALLOW_EMPTY_PASSWORD", value: "yes" }],
       },
     ],
     volumes: [
-      {
-        name: "initCh",
-        efsVolumeConfiguration: {
-          fileSystemId,
-        },
-      },
       {
         name: "persistCh",
         efsVolumeConfiguration: {
@@ -82,13 +78,15 @@ export const makeClickhouseService = async (ecs, fileSystemId, taskName) => {
   });
   console.log("created the clickhouse task");
 
+  let discoveryServiceArn = await getOrCreateDiscoveryService(
+    serviceDiscoveryClient,
+    namespaceId,
+    "rabbitmq"
+  );
+  console.log("clickhouse discovery service arn obtained", discoveryServiceArn);
+
   let serviceOutput = await ecs.createService({
     taskDefinition: taskName,
-    serviceRegistries: [
-      {
-        registryArn: "arn:aws:servicediscovery:us-east-1:855374076712:service/srv-v4vby67rnthp22na",
-      }
-    ],
     serviceName: "clickhouse",
     cluster: "bard-cluster",
     desiredCount: 1,
@@ -103,11 +101,16 @@ export const makeClickhouseService = async (ecs, fileSystemId, taskName) => {
     },
     networkConfiguration: {
       awsvpcConfiguration: {
-        subnets: ["subnet-07a5d4615304da5e5"],
-        securityGroups: ["sg-01167299cc4f4f23c"],
+        subnets: ["subnet-08e97a8a4d3098617"],
+        securityGroups: ["sg-0d105c4a0fc827061"],
         assignPublicIp: "ENABLED",
       },
     },
+    serviceRegistries: [
+      {
+        registryArn: discoveryServiceArn,
+      },
+    ],
   });
   console.log("created the clickhouse service");
   console.log("waiting for the clickhouse service to start");

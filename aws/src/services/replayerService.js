@@ -1,6 +1,12 @@
-import { waitFor } from "./utils.js";
+import { getOrCreateDiscoveryService, waitFor } from "./utils.js";
 
-export const makeReplayerService = async (ecs, fileSystemId, taskName) => {
+export const makeReplayerService = async (
+  ecs,
+  fileSystemId,
+  taskName,
+  serviceDiscoveryClient,
+  namespaceId
+) => {
   await ecs.registerTaskDefinition({
     family: taskName,
     //TODO: Does this task exist by default?
@@ -28,6 +34,7 @@ export const makeReplayerService = async (ecs, fileSystemId, taskName) => {
           { name: "PGUSER", value: "user" },
           { name: "PGPASSWORD", value: "password" },
           { name: "PGDATABASE", value: "bard" },
+          { name: "CHHOST", value: "clickhouse.bard" },
         ],
         logConfiguration: {
           logDriver: "awslogs",
@@ -64,13 +71,15 @@ export const makeReplayerService = async (ecs, fileSystemId, taskName) => {
   });
   console.log("created the replayer task");
 
+  let discoveryServiceArn = await getOrCreateDiscoveryService(
+    serviceDiscoveryClient,
+    namespaceId,
+    "replayer"
+  );
+  console.log("replayer discovery service arn obtained", discoveryServiceArn);
+
   let serviceOutput = await ecs.createService({
     taskDefinition: taskName,
-    serviceRegistries: [
-      {
-        registryArn: "arn:aws:servicediscovery:us-east-1:855374076712:service/srv-zcrw3r5lhjyyg4tu",
-      }
-    ],
     serviceName: "replayer",
     cluster: "bard-cluster",
     desiredCount: 1,
@@ -85,11 +94,16 @@ export const makeReplayerService = async (ecs, fileSystemId, taskName) => {
     },
     networkConfiguration: {
       awsvpcConfiguration: {
-        subnets: ["subnet-07a5d4615304da5e5"],
-        securityGroups: ["sg-01167299cc4f4f23c"],
+        subnets: ["subnet-08e97a8a4d3098617"],
+        securityGroups: ["sg-0d105c4a0fc827061"],
         assignPublicIp: "ENABLED",
       },
     },
+    serviceRegistries: [
+      {
+        registryArn: discoveryServiceArn,
+      },
+    ],
   });
   console.log("created the replayer-service");
   console.log("waiting for the replayer-service to start");
@@ -126,13 +140,4 @@ export const makeReplayerService = async (ecs, fileSystemId, taskName) => {
     "RUNNING"
   );
   console.log("replayer task running!");
-
-  //wait 1.5 mins and pull the task to find out what failed
-  setTimeout(async () => {
-    let output = await ecs.describeTasks({
-      tasks: [taskList.taskArns[0]],
-      cluster: "bard-cluster",
-    });
-    console.log("output", output);
-  }, 90 * 1000);
 };

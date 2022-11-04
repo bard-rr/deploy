@@ -1,6 +1,12 @@
-import { waitFor } from "./utils.js";
+import { getOrCreateDiscoveryService, waitFor } from "./utils.js";
 
-export const makeSessionEnderService = async (ecs, fileSystemId, taskName) => {
+export const makeSessionEnderService = async (
+  ecs,
+  fileSystemId,
+  taskName,
+  serviceDiscoveryClient,
+  namespaceId
+) => {
   await ecs.registerTaskDefinition({
     family: taskName,
     //TODO: Does this task exist by default?
@@ -58,13 +64,18 @@ export const makeSessionEnderService = async (ecs, fileSystemId, taskName) => {
   });
   console.log("created the session_ender task");
 
+  let discoveryServiceArn = await getOrCreateDiscoveryService(
+    serviceDiscoveryClient,
+    namespaceId,
+    "session_ender"
+  );
+  console.log(
+    "session_ender discovery service arn obtained",
+    discoveryServiceArn
+  );
+
   let serviceOutput = await ecs.createService({
     taskDefinition: taskName,
-    serviceRegistries: [
-      {
-        registryArn: "arn:aws:servicediscovery:us-east-1:855374076712:service/srv-xpucodcscnrnvo3p",
-      }
-    ],
     serviceName: "session_ender",
     cluster: "bard-cluster",
     desiredCount: 1,
@@ -79,11 +90,16 @@ export const makeSessionEnderService = async (ecs, fileSystemId, taskName) => {
     },
     networkConfiguration: {
       awsvpcConfiguration: {
-        subnets: ["subnet-07a5d4615304da5e5"],
-        securityGroups: ["sg-01167299cc4f4f23c"],
+        subnets: ["subnet-08e97a8a4d3098617"],
+        securityGroups: ["sg-0d105c4a0fc827061"],
         assignPublicIp: "ENABLED",
       },
     },
+    serviceRegistries: [
+      {
+        registryArn: discoveryServiceArn,
+      },
+    ],
   });
   console.log("created the session_ender-service");
   console.log("waiting for the session_ender-service to start");
