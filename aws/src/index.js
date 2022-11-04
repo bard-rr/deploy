@@ -101,13 +101,13 @@ const main = async () => {
     // console.log("created cluster");
 
     // //hard code file system during dev things
-    // await makePostgresService(
-    //   ecs,
-    //   "fs-01293ef4db092ef8e",
-    //   "postgres-task",
-    //   serviceDiscovery,
-    //   namespaceId
-    // );
+    await makePostgresService(
+      ecs,
+      "fs-01293ef4db092ef8e",
+      "postgres-task",
+      serviceDiscovery,
+      namespaceId
+    );
     // await makeRabbitmqService(
     //   ecs,
     //   "fs-01293ef4db092ef8e",
@@ -121,13 +121,13 @@ const main = async () => {
     //   "clickhouse-task",
     //   NAMESPACE_NAME
     // );
-    await makeAgentApiService(
-      ecs,
-      "fs-01293ef4db092ef8e",
-      "agent-api-task",
-      serviceDiscovery,
-      namespaceId
-    );
+    // await makeAgentApiService(
+    //   ecs,
+    //   "fs-01293ef4db092ef8e",
+    //   "agent-api-task",
+    //   serviceDiscovery,
+    //   namespaceId
+    // );
     // await makeSessionEnderService(
     //   ecs,
     //   "fs-01293ef4db092ef8e",

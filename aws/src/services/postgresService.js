@@ -31,6 +31,7 @@ export const makePostgresService = async (
         environment: [
           { name: "POSTGRES_USER", value: "user" },
           { name: "POSTGRES_PASSWORD", value: "password" },
+          { name: "PGDATA", value: "/var/lib/postgresql/data/pgdata" },
         ],
         mountPoints: [
           {
