@@ -1,5 +1,5 @@
 import { ECS } from "@aws-sdk/client-ecs";
-//import { EFS } from "@aws-sdk/client-efs";
+import { EFS } from "@aws-sdk/client-efs";
 import { ServiceDiscovery } from "@aws-sdk/client-servicediscovery";
 import dotenv from "dotenv";
 import { makePostgresService } from "./services/postgresService.js";
@@ -8,7 +8,7 @@ import { makeClickhouseService } from "./services/clickhouseService.js";
 import { makeAgentApiService } from "./services/agentApiService.js";
 import { makeReplayerService } from "./services/replayerService.js";
 import { makeSessionEnderService } from "./services/sessionEnderService.js";
-//import { waitFor } from "./services/utils.js";
+import { waitFor } from "./services/utils.js";
 
 const main = async () => {
   try {
@@ -17,22 +17,18 @@ const main = async () => {
     let ecs = new ECS({
       region: "us-east-1",
       credentials: {
-        // eslint-disable-next-line no-undef
         accessKeyId: process.env.AWS_ACCESS_KEY,
-        // eslint-disable-next-line no-undef
         secretAccessKey: process.env.AWS_SECRET_KEY,
       },
     });
     let serviceDiscovery = new ServiceDiscovery({
       region: "us-east-1",
       credentials: {
-        // eslint-disable-next-line no-undef
         accessKeyId: process.env.AWS_ACCESS_KEY,
-        // eslint-disable-next-line no-undef
         secretAccessKey: process.env.AWS_SECRET_KEY,
       },
     });
-    let namespace = await serviceDiscovery.createPrivateDnsNamespace({
+    await serviceDiscovery.createPrivateDnsNamespace({
       Name: NAMESPACE_NAME,
       //TODO: how to get this programatically?
       Vpc: "vpc-0bcc662d0027a013b",
@@ -51,19 +47,19 @@ const main = async () => {
 
     // // //TODO: uncomment this code that makes the filesystem and cluster
 
-    // let efs = new EFS({
-    //   region: "us-east-1",
-    //   credentials: {
-    //     // eslint-disable-next-line no-undef
-    //     accessKeyId: process.env.AWS_ACCESS_KEY,
-    //     // eslint-disable-next-line no-undef
-    //     secretAccessKey: process.env.AWS_SECRET_KEY,
-    //   },
-    // });
-    // console.log("created an ecs client");
-    // //FARGATE and FARGATE_SPOT cap providers should be associated with the ecs client
-    // //if you want to use fargate:
-    // //https://docs.aws.amazon.com/AmazonECS/latest/developerguide/fargate-capacity-providers.html
+    let efs = new EFS({
+      region: "us-east-1",
+      credentials: {
+        // eslint-disable-next-line no-undef
+        accessKeyId: process.env.AWS_ACCESS_KEY,
+        // eslint-disable-next-line no-undef
+        secretAccessKey: process.env.AWS_SECRET_KEY,
+      },
+    });
+    console.log("created an ecs client");
+    //FARGATE and FARGATE_SPOT cap providers should be associated with the ecs client
+    //if you want to use fargate:
+    //https://docs.aws.amazon.com/AmazonECS/latest/developerguide/fargate-capacity-providers.html
     // const fileSystem = await efs.createFileSystem({});
     // let FileSystemId = fileSystem.FileSystemId;
     // console.log("created file system!");
@@ -80,7 +76,7 @@ const main = async () => {
     // await efs.createMountTarget({
     //   FileSystemId,
     //   SubnetId: "subnet-08e97a8a4d3098617", //TODO: How to get this?
-    //   SecurityGroups: ["sg-0824cc4158587a789"], //TODO: How to get this?
+    //   SecurityGroups: ["sg-0d105c4a0fc827061"], //TODO: How to get this?
     // });
     // console.log("mount target created");
     // await waitFor(
@@ -94,55 +90,55 @@ const main = async () => {
     //   2
     // );
     // console.log("mount target initialized");
-    // await ecs.createCluster({
-    //   capacityProviders: ["FARGATE", "FARGATE_SPOT"],
-    //   clusterName: "bard-cluster",
-    // });
-    // console.log("created cluster");
+    await ecs.createCluster({
+      capacityProviders: ["FARGATE", "FARGATE_SPOT"],
+      clusterName: "bard-cluster",
+    });
+    console.log("created cluster");
 
     // //hard code file system during dev things
     await makePostgresService(
       ecs,
-      "fs-01293ef4db092ef8e",
+      "fs-00153c0d4f3befc95",
       "postgres-task",
       serviceDiscovery,
       namespaceId
     );
-    await makeRabbitmqService(
-      ecs,
-      "fs-01293ef4db092ef8e",
-      "rabbitmq-task",
-      serviceDiscovery,
-      namespaceId
-    );
-    await makeClickhouseService(
-      ecs,
-      "fs-01293ef4db092ef8e",
-      "clickhouse-task",
-      serviceDiscovery,
-      namespaceId
-    );
-    await makeAgentApiService(
-      ecs,
-      "fs-01293ef4db092ef8e",
-      "agent-api-task",
-      serviceDiscovery,
-      namespaceId
-    );
-    await makeSessionEnderService(
-      ecs,
-      "fs-01293ef4db092ef8e",
-      "session_ender-task",
-      serviceDiscovery,
-      namespaceId
-    );
-    await makeReplayerService(
-      ecs,
-      "fs-01293ef4db092ef8e",
-      "replayer-task",
-      serviceDiscovery,
-      namespaceId
-    );
+    // await makeReplayerService(
+    //   ecs,
+    //   "fs-00153c0d4f3befc95",
+    //   "replayer-task",
+    //   serviceDiscovery,
+    //   namespaceId
+    // );
+    // await makeRabbitmqService(
+    //   ecs,
+    //   "fs-00153c0d4f3befc95",
+    //   "rabbitmq-task",
+    //   serviceDiscovery,
+    //   namespaceId
+    // );
+    // await makeClickhouseService(
+    //   ecs,
+    //   "fs-00153c0d4f3befc95",
+    //   "clickhouse-task",
+    //   serviceDiscovery,
+    //   namespaceId
+    // );
+    // await makeAgentApiService(
+    //   ecs,
+    //   "fs-00153c0d4f3befc95",
+    //   "agent-api-task",
+    //   serviceDiscovery,
+    //   namespaceId
+    // );
+    // await makeSessionEnderService(
+    //   ecs,
+    //   "fs-00153c0d4f3befc95",
+    //   "session_ender-task",
+    //   serviceDiscovery,
+    //   namespaceId
+    // );
 
     console.log("\n\nscript executed successfully! 🎉 🎉 🎉\n\n");
   } catch (error) {

@@ -34,7 +34,7 @@ export const makeReplayerService = async (
           { name: "PGUSER", value: "user" },
           { name: "PGPASSWORD", value: "password" },
           { name: "PGDATABASE", value: "bard" },
-          { name: "CLICKHOUSE_HOST", value: "clickhouse.bard" },
+          { name: "CHHOST", value: "clickhouse.bard" },
         ],
         logConfiguration: {
           logDriver: "awslogs",
@@ -95,7 +95,7 @@ export const makeReplayerService = async (
     networkConfiguration: {
       awsvpcConfiguration: {
         subnets: ["subnet-08e97a8a4d3098617"],
-        securityGroups: ["sg-0824cc4158587a789"],
+        securityGroups: ["sg-0d105c4a0fc827061"],
         assignPublicIp: "ENABLED",
       },
     },
