@@ -88,7 +88,7 @@ export const makeAgentApiService = async (ecs, fileSystemId, taskName) => {
     networkConfiguration: {
       awsvpcConfiguration: {
         subnets: ["subnet-07a5d4615304da5e5"],
-        securityGroups: ["sg-0824cc4158587a789"],
+        securityGroups: ["sg-01167299cc4f4f23c"],
         assignPublicIp: "ENABLED",
       },
     },

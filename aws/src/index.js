@@ -59,7 +59,7 @@ const main = async () => {
     await efs.createMountTarget({
       FileSystemId,
       SubnetId: "subnet-07a5d4615304da5e5", //TODO: How to get this?
-      SecurityGroups: ["sg-0824cc4158587a789"], //TODO: How to get this?
+      SecurityGroups: ["sg-01167299cc4f4f23c"], //TODO: How to get this?
     });
     console.log("mount target created");
     await waitFor(
