@@ -10,7 +10,8 @@ export const makePostgresService = async (ecs, fileSystemId, taskName) => {
     containerDefinitions: [
       {
         // image: "postgres:15",
-        image: "bardrr/postgres",
+        // image: "bardrr/postgres",
+        image: "bardrr/postgres:test",
         name: "postgres",
         //TODO: need a better value for this
         memoryReservation: null,

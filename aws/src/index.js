@@ -9,110 +9,116 @@ import { makeReplayerService } from "./services/replayerService.js";
 import { makeSessionEnderService } from "./services/sessionEnderService.js";
 import { waitFor } from "./services/utils.js";
 
+dotenv.config();
+
 const main = async () => {
-  let ecs;
-  let efs;
-  let FileSystemId;
-  let fileSystem;
-  let cluster;
-  let postgresTask;
-  try {
-    dotenv.config();
-    ecs = new ECS({
-      region: "us-east-1",
-      credentials: {
-        // eslint-disable-next-line no-undef
-        accessKeyId: process.env.AWS_ACCESS_KEY,
-        // eslint-disable-next-line no-undef
-        secretAccessKey: process.env.AWS_SECRET_KEY,
-      },
-    });
-    // efs = new EFS({
-    //   region: "us-east-1",
-    //   credentials: {
-    //     // eslint-disable-next-line no-undef
-    //     accessKeyId: process.env.AWS_ACCESS_KEY,
-    //     // eslint-disable-next-line no-undef
-    //     secretAccessKey: process.env.AWS_SECRET_KEY,
-    //   },
-    // });
-    console.log("created an ecs client");
+  const ecsClient = new ECS({
+    region: "us-east-1",
+    credentials: {
+      accessKeyId: process.env.AWS_ACCESS_KEY,
+      secretAccessKey: process.env.AWS_SECRET_KEY,
+    },
+  });
 
-    // //TODO: uncomment the code that makes the filesystem and cluster
+  const efsClient = new EFS({
+    region: "us-east-1",
+    credentials: {
+      accessKeyId: process.env.AWS_ACCESS_KEY,
+      secretAccessKey: process.env.AWS_SECRET_KEY,
+    },
+  });
 
-    // //FARGATE and FARGATE_SPOT cap providers should be associated with the ecs client
-    // //if you want to use fargate:
-    // //https://docs.aws.amazon.com/AmazonECS/latest/developerguide/fargate-capacity-providers.html
-    // const fileSystem = await efs.createFileSystem({});
-    // FileSystemId = fileSystem.FileSystemId;
-    // console.log("created file system!");
-    // await waitFor(
-    //   efs.describeFileSystems.bind(efs),
-    //   {
-    //     FileSystemId,
-    //   },
-    //   "fileSystemAvailable",
-    //   "available"
-    // );
-    // console.log("file system initialized");
+  console.log('Creating cluster...');
 
-    // await efs.createMountTarget({
-    //   FileSystemId,
-    //   SubnetId: "subnet-07a5d4615304da5e5", //TODO: How to get this?
-    //   SecurityGroups: ["sg-01167299cc4f4f23c"], //TODO: How to get this?
-    // });
-    // console.log("mount target created");
-    // await waitFor(
-    //   efs.describeMountTargets.bind(efs),
-    //   {
-    //     FileSystemId,
-    //     MaxItems: 1,
-    //   },
-    //   "mountTargetAvailable",
-    //   "available",
-    //   2
-    // );
-    // console.log("mount target initialized");
-    await ecs.createCluster({
-      capacityProviders: ["FARGATE", "FARGATE_SPOT"],
-      clusterName: "bard-cluster",
-    });
-    console.log("created cluster");
+  await ecsClient.createCluster({
+    capacityProviders: ["FARGATE", "FARGATE_SPOT"],
+    clusterName: "bard-cluster",
+  });
 
-    //hard code file system during dev things
-    await makePostgresService(ecs, "fs-0a10ed3c392fc4bf3", "postgres-task");
-    await makeRabbitmqService(ecs, "fs-0a10ed3c392fc4bf3", "rabbitmq-task");
-    await makeClickhouseService(ecs, "fs-0a10ed3c392fc4bf3", "clickhouse-task");
-    await makeAgentApiService(ecs, "fs-0a10ed3c392fc4bf3", "agent-api-task");
-    await makeSessionEnderService(
-      ecs,
-      "fs-0a10ed3c392fc4bf3",
-      "session_ender-task"
-    );
-    await makeReplayerService(ecs, "fs-0a10ed3c392fc4bf3", "replayer-task");
+  console.log("Done.");
 
-    console.log("\n\nscript executed successfully! 🎉 🎉 🎉\n\n");
-  } catch (error) {
-    console.log("error: cleaning up", error);
-    //clean up everything so that I don't need to later on.
-    if (fileSystem) {
-      console.log("cleaning up file system");
-      await efs.deleteFileSystem({
-        FileSystemId: "fs-0a10ed3c392fc4bf3",
-      });
-    }
+  console.log('Creating and initializing Postgres EFS...');
 
-    if (postgresTask) {
-      console.log("cleaning up postgres task");
-    }
+  const postgresEfs = await efsClient.createFileSystem({});
+  const postgresEfsId = postgresEfs.FileSystemId;
 
-    if (cluster) {
-      console.log("cleaning up cluster");
-      await ecs.deleteCluster({
-        cluster: "bard-cluster",
-      });
-    }
-  }
+  await waitFor(
+    efsClient.describeFileSystems.bind(efsClient),
+    {
+      FileSystemId: postgresEfsId,
+    },
+    "fileSystemAvailable",
+    "available"
+  );
+
+  console.log("Done.");
+
+  console.log("Creating and initializing Postgres EFS mount target...");
+
+  await efsClient.createMountTarget({
+    FileSystemId: postgresEfsId,
+    SubnetId: "subnet-07a5d4615304da5e5",
+    SecurityGroups: ["sg-01167299cc4f4f23c"],
+  });
+
+  await waitFor(
+    efsClient.describeMountTargets.bind(efsClient),
+    {
+      FileSystemId: postgresEfsId,
+      MaxItems: 1,
+    },
+    "mountTargetAvailable",
+    "available",
+    2
+  );
+
+  console.log("Done.");
+
+  console.log('Creating and initializing Clickhouse EFS...');
+
+  const clickhouseEfs = await efsClient.createFileSystem({});
+  const clickhouseEfsId = clickhouseEfs.FileSystemId;
+
+  await waitFor(
+    efsClient.describeFileSystems.bind(efsClient),
+    {
+      FileSystemId: clickhouseEfsId,
+    },
+    "fileSystemAvailable",
+    "available"
+  );
+
+  console.log("Done.");
+
+  console.log("Creating and initializing Clickhouse EFS mount target...");
+
+  await efsClient.createMountTarget({
+    FileSystemId: clickhouseEfsId,
+    SubnetId: "subnet-07a5d4615304da5e5",
+    SecurityGroups: ["sg-01167299cc4f4f23c"],
+  });
+
+  await waitFor(
+    efsClient.describeMountTargets.bind(efsClient),
+    {
+      FileSystemId: clickhouseEfsId,
+      MaxItems: 1,
+    },
+    "mountTargetAvailable",
+    "available",
+    2
+  );
+
+  console.log("Done.");
+
+  await makePostgresService(ecsClient, postgresEfsId, "postgres-task");
+  await makeRabbitmqService(ecsClient, "rabbitmq-task");
+  await makeClickhouseService(ecsClient, clickhouseEfsId, "clickhouse-task");
+  await makeAgentApiService(ecsClient, "agent-api-task");
+  await makeSessionEnderService(ecsClient, "session_ender-task");
+  await makeReplayerService(ecsClient, "replayer-task");
+
+  console.log("Bard deployed.");
 };
 
 main();

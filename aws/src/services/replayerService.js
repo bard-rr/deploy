@@ -1,6 +1,6 @@
 import { waitFor } from "./utils.js";
 
-export const makeReplayerService = async (ecs, fileSystemId, taskName) => {
+export const makeReplayerService = async (ecs, taskName) => {
   await ecs.registerTaskDefinition({
     family: taskName,
     //TODO: Does this task exist by default?
@@ -28,6 +28,7 @@ export const makeReplayerService = async (ecs, fileSystemId, taskName) => {
           { name: "PGUSER", value: "user" },
           { name: "PGPASSWORD", value: "password" },
           { name: "PGDATABASE", value: "bard" },
+          { name: "CHHOST", value: "clickhouse.bard" },
         ],
         logConfiguration: {
           logDriver: "awslogs",

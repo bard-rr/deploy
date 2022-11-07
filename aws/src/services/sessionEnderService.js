@@ -1,6 +1,6 @@
 import { waitFor } from "./utils.js";
 
-export const makeSessionEnderService = async (ecs, fileSystemId, taskName) => {
+export const makeSessionEnderService = async (ecs, taskName) => {
   await ecs.registerTaskDefinition({
     family: taskName,
     //TODO: Does this task exist by default?

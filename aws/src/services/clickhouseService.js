@@ -9,7 +9,9 @@ export const makeClickhouseService = async (ecs, fileSystemId, taskName) => {
     requiresCompatibilities: ["FARGATE"],
     containerDefinitions: [
       {
-        image: "clickhouse/clickhouse-server",
+        // image: "clickhouse/clickhouse-server",
+        image: "bardrr/clickhouse",
+        // image: "bardrr/clickhouse:test",
         name: "clickhouse",
         //TODO: need a better value for this
         memoryReservation: null,
@@ -23,13 +25,14 @@ export const makeClickhouseService = async (ecs, fileSystemId, taskName) => {
           },
         ],
         mountPoints: [
-          {
-            sourceVolume: "initCh",
-            containerPath: "/docker-entrypoint-initdb.d",
-          },
+          // {
+          //   sourceVolume: "initCh",
+          //   containerPath: "/docker-entrypoint-initdb.d",
+          // },
           {
             sourceVolume: "persistCh",
-            containerPath: "/bitnami/clickhouse",
+            containerPath: "/var/lib/clickhouse/",
+            // containerPath: "/bitnami/clickhouse",
           },
         ],
         logConfiguration: {
@@ -41,16 +44,16 @@ export const makeClickhouseService = async (ecs, fileSystemId, taskName) => {
             "awslogs-stream-prefix": "ecs",
           },
         },
-        //environment: [{ name: "ALLOW_EMPTY_PASSWORD", value: "yes" }],
+        // environment: [{ name: "ALLOW_EMPTY_PASSWORD", value: "yes" }],
       },
     ],
     volumes: [
-      {
-        name: "initCh",
-        efsVolumeConfiguration: {
-          fileSystemId,
-        },
-      },
+      // {
+      //   name: "initCh",
+      //   efsVolumeConfiguration: {
+      //     fileSystemId,
+      //   },
+      // },
       {
         name: "persistCh",
         efsVolumeConfiguration: {
