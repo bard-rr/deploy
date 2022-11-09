@@ -1,49 +1,40 @@
-## AWS ECS Script
+## Bard AWS Deployment Script
 
-This script requires a few things.
+This script will deploy a containerized version of Bard to Amazon's Elastic Container Service (ECS). This solution allows for an easy deployment of Bard that scales well thanks to the managed cloud technology offered by AWS.
 
-- a `.env` file with an `AWS_ACCESS_KEY` field and `AWS_SECRET_KEY` field. These credentials should correspond to an AWS user with the `AmazonECS_FullAccess` and the `AmazonElasticFileSystemFullAccess` IAM policies applied to them.
+### Setting up the script
 
-Notes to self
-
-- Tried to create a task using an EFS volume programatically with no success. I got some errors about needing to configure my VPC to communicate with the EFS. Tried to create a task in the browser to do the same thing with the same result. Full error message is below.
+First, clone this repo to your local machine, navigate to the `aws` directory and install dependencies with
 
 ```
-ResourceInitializationError: failed to invoke EFS utils commands to set up EFS volumes: stderr: Failed to resolve "fs-0e4a39a0b7bb8b885.efs.us-east-1.amazonaws.com" - check that your file system ID is correct, and ensure that the VPC has an EFS mount target for this file system ID. See https://docs.aws.amazon.com/console/efs/mount-dns-name for more detail. Attempting to lookup mount target ip address using botocore. Failed to import necessary dependency botocore, please install botocore first. : unsuccessful EFS utils command execution; code: 1
+npm install
 ```
 
-Ok, looks like I need to mount something onto the EFS instance so that it can communicate with the outside world. Did that manually in the browser, lets see if the task I created works now... Nope, still getting that error... Odd, I made sure that the mount target is the same VPC and subnet that the task is running on... there must be something else I need to do to finish setting up the EFS.
-
-Oh, So that just creates the mount target. looks like I actually need to do something with that mount target in order for it to work.
-
-Tried running the task with a basic root dir in the volumes definition and got this error below.
+Next, create a `.env` file in the `aws` directory with the following variables:
 
 ```
-ResourceInitializationError: failed to invoke EFS utils commands to set up EFS volumes: stderr: b'mount.nfs4: Connection timed out' : unsuccessful EFS utils command execution; code: 32
+AWS_ACCESS_KEY
+AWS_SECRET_KEY
+AWS_VPC_ID
+AWS_SUBNET_ID
+AWS_SECURITY_GROUP_ID
 ```
 
-Got some help here: looks like I need to do some security group config:
-https://aws.amazon.com/premiumsupport/knowledge-center/fargate-unable-to-mount-efs/
+`AWS_ACCESS_KEY` and `AWS_SECRET_KEY` are the access key and secret key for the Amazon IAM user who will own and pay for the AWS resources the script creates. The IAM user must have the below permission policies applied in order for the script to function. [See here](https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_manage-attach-detach.html#add-policies-console) for more information on applying permission policies to IAM users
 
-Looks like security groups are an EC2 feature. Also looks like the default one is set up to accept connections from anywhere, and that a new security group was created each time I executed a task. So THAT'S why this wasn't working: the default security group for EFS wasn't the same as the security group I was using to run the tasks with.
+- `AmazonECS_FullAccess`
+- `AmazonElasticFileSystemFullAccess`
 
-I've got the default security group configured to accept connections from anywhere. So it looks like as long as I run the tasks with the default security group and have the EFS mount targets use the default security group, I should be good (right?)
+`AWS_VPC_ID` and `AWS_SUBNET_ID` are the IDs of the Virtual Private Cloud (VPC) and subnet that the AWS resources will be created in. [See here](https://docs.aws.amazon.com/directoryservice/latest/admin-guide/gsg_create_vpc.html) for details on creating a VPC with a single public subnet. Once the VPC and subnet have been created, you can find their IDs using the [AWS VPC console](https://console.aws.amazon.com/vpc/).
 
-RIGHT!!! Looks like this works!
+`AWS_SECURITY_GROUP_ID` is the ID of the security group that will be associated with the AWS resources the script creates. Among other things, Security Groups control how services within the AWS cloud are able to communicate with each other. This script will apply the same security group to all components it creates; the script will only work if the security group allows communication for http over all ports. **Note that this is NOT a secure configuration:** we recommend configuring security groups according to AWS best practices once the app is running. [See here](https://docs.aws.amazon.com/vpc/latest/userguide/VPC_SecurityGroups.html) for more information on creating and working with security groups.
 
-Ah, one more problem... I need to wait for the mount target to be created before I kick off the task. Otherwise, it won't work.
+### Running the Script
 
-Ok, so now I've got rabbit and postgres working... but now I can't get clickhouse to start: I keep getting this error: `Essential container in task exited`
+Once the dependencies have been installed and the .env file is properly configured, execute the script by running
 
-Things I've tried
+```
+npm run start
+```
 
-- just using the bitnami container from aws ecr
-- bitnami container with the env var allowing empty passwords set
-- docker image from `hub.docker.com/r/clickhouse/clickhouse-server`. Couldn't pull the container.
-- huh, just using clickhouse/clickhouse-server worked just fine
-
-### Up Next:
-
-include commands to start the applications in the task for each bard piece
-
-Having trouble connecting to my things now... where did marcin find that url he was using earlier...?
+Note that the script will take anywhere from 5 to 10 minutes to run.
