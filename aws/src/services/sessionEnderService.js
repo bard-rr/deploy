@@ -1,8 +1,13 @@
-import { waitFor } from "./utils.js";
+import { getOrCreateDiscoveryService, waitFor } from "./utils.js";
 import dotenv from "dotenv";
 dotenv.config();
 
-export const makeSessionEnderService = async (ecs, taskName) => {
+export const makeSessionEnderService = async (
+  ecs,
+  taskName,
+  serviceDiscoveryClient,
+  namespaceId
+) => {
   await ecs.registerTaskDefinition({
     family: taskName,
     //TODO: Does this task exist by default?
@@ -60,12 +65,22 @@ export const makeSessionEnderService = async (ecs, taskName) => {
   });
   console.log("created the session_ender task");
 
+  let discoveryServiceArn = await getOrCreateDiscoveryService(
+    serviceDiscoveryClient,
+    namespaceId,
+    "session_ender"
+  );
+
+  console.log(
+    "session_ender discovery service Arn obtained",
+    discoveryServiceArn
+  );
+
   let serviceOutput = await ecs.createService({
     taskDefinition: taskName,
     serviceRegistries: [
       {
-        registryArn:
-          "arn:aws:servicediscovery:us-east-1:855374076712:service/srv-xpucodcscnrnvo3p",
+        registryArn: discoveryServiceArn,
       },
     ],
     serviceName: "session_ender",

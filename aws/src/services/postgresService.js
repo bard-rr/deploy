@@ -1,8 +1,14 @@
-import { waitFor } from "./utils.js";
+import { getOrCreateDiscoveryService, waitFor } from "./utils.js";
 import dotenv from "dotenv";
 dotenv.config();
 
-export const makePostgresService = async (ecs, fileSystemId, taskName) => {
+export const makePostgresService = async (
+  ecs,
+  fileSystemId,
+  taskName,
+  serviceDiscoveryClient,
+  namespaceId
+) => {
   await ecs.registerTaskDefinition({
     family: taskName,
     //TODO: Does this task exist by default?
@@ -91,12 +97,19 @@ export const makePostgresService = async (ecs, fileSystemId, taskName) => {
   });
   console.log("created the postgres task");
 
+  let discoveryServiceArn = await getOrCreateDiscoveryService(
+    serviceDiscoveryClient,
+    namespaceId,
+    "postgres"
+  );
+
+  console.log("postgres discovery service Arn obtained", discoveryServiceArn);
+
   let serviceOutput = await ecs.createService({
     taskDefinition: taskName,
     serviceRegistries: [
       {
-        registryArn:
-          "arn:aws:servicediscovery:us-east-1:855374076712:service/srv-byeac3ahujissudz",
+        registryArn: discoveryServiceArn,
       },
     ],
     serviceName: "postgres",

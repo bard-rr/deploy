@@ -13,6 +13,7 @@
   "dependencies": {
     "@aws-sdk/client-ecs": "^3.201.0",
     "@aws-sdk/client-efs": "^3.202.0",
+    "@aws-sdk/client-servicediscovery": "^3.204.0",
     "dotenv": "^16.0.3"
   },
   "devDependencies": {

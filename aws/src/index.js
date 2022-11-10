@@ -1,5 +1,6 @@
 import { ECS } from "@aws-sdk/client-ecs";
 import { EFS } from "@aws-sdk/client-efs";
+import { ServiceDiscovery } from "@aws-sdk/client-servicediscovery";
 import dotenv from "dotenv";
 import { makePostgresService } from "./services/postgresService.js";
 import { makeRabbitmqService } from "./services/rabbitmqService.js";
@@ -23,6 +24,7 @@ dotenv.config();
 */
 
 const main = async () => {
+  const NAMESPACE_NAME = "bard";
   const ecsClient = new ECS({
     region: "us-east-1",
     credentials: {
@@ -30,6 +32,30 @@ const main = async () => {
       secretAccessKey: process.env.AWS_SECRET_KEY,
     },
   });
+
+  let serviceDiscovery = new ServiceDiscovery({
+    region: "us-east-1",
+    credentials: {
+      accessKeyId: process.env.AWS_ACCESS_KEY,
+      secretAccessKey: process.env.AWS_SECRET_KEY,
+    },
+  });
+  await serviceDiscovery.createPrivateDnsNamespace({
+    Name: NAMESPACE_NAME,
+    //TODO: how to get this programatically?
+    Vpc: process.env.AWS_VPC_ID,
+  });
+  let namespaceList = await serviceDiscovery.listNamespaces({
+    MaxResults: 1,
+    Filters: [
+      {
+        Name: "NAME",
+        Values: [NAMESPACE_NAME],
+      },
+    ],
+  });
+  let namespaceId = namespaceList.Namespaces[0].Id;
+  console.log("namespace created");
 
   const efsClient = new EFS({
     region: "us-east-1",
@@ -48,88 +74,121 @@ const main = async () => {
 
   console.log("Done.");
 
-  console.log("Creating and initializing Postgres EFS...");
+  // console.log("Creating and initializing Postgres EFS...");
 
-  const postgresEfs = await efsClient.createFileSystem({});
-  const postgresEfsId = postgresEfs.FileSystemId;
+  // const postgresEfs = await efsClient.createFileSystem({});
+  // const postgresEfsId = postgresEfs.FileSystemId;
 
-  await waitFor(
-    efsClient.describeFileSystems.bind(efsClient),
-    {
-      FileSystemId: postgresEfsId,
-    },
-    "fileSystemAvailable",
-    "available"
+  // await waitFor(
+  //   efsClient.describeFileSystems.bind(efsClient),
+  //   {
+  //     FileSystemId: postgresEfsId,
+  //   },
+  //   "fileSystemAvailable",
+  //   "available"
+  // );
+
+  // console.log("Done.");
+
+  // console.log("Creating and initializing Postgres EFS mount target...");
+
+  // await efsClient.createMountTarget({
+  //   FileSystemId: postgresEfsId,
+  //   SubnetId: process.env.AWS_SUBNET_ID,
+  //   SecurityGroups: [process.env.AWS_SECURITY_GROUP_ID],
+  // });
+
+  // await waitFor(
+  //   efsClient.describeMountTargets.bind(efsClient),
+  //   {
+  //     FileSystemId: postgresEfsId,
+  //     MaxItems: 1,
+  //   },
+  //   "mountTargetAvailable",
+  //   "available",
+  //   2
+  // );
+
+  // console.log("Done.");
+
+  // console.log("Creating and initializing Clickhouse EFS...");
+
+  // const clickhouseEfs = await efsClient.createFileSystem({});
+  // const clickhouseEfsId = clickhouseEfs.FileSystemId;
+
+  // await waitFor(
+  //   efsClient.describeFileSystems.bind(efsClient),
+  //   {
+  //     FileSystemId: clickhouseEfsId,
+  //   },
+  //   "fileSystemAvailable",
+  //   "available"
+  // );
+
+  // console.log("Done.");
+
+  // console.log("Creating and initializing Clickhouse EFS mount target...");
+
+  // await efsClient.createMountTarget({
+  //   FileSystemId: clickhouseEfsId,
+  //   SubnetId: process.env.AWS_SUBNET_ID,
+  //   SecurityGroups: [process.env.AWS_SECURITY_GROUP_ID],
+  // });
+
+  // await waitFor(
+  //   efsClient.describeMountTargets.bind(efsClient),
+  //   {
+  //     FileSystemId: clickhouseEfsId,
+  //     MaxItems: 1,
+  //   },
+  //   "mountTargetAvailable",
+  //   "available",
+  //   2
+  // );
+
+  // console.log("Done.");
+
+  // await makePostgresService(
+  //   ecsClient,
+  //   postgresEfsId,
+  //   "postgres-task",
+  //   serviceDiscovery,
+  //   namespaceId
+  // );
+  // await makeRabbitmqService(
+  //   ecsClient,
+  //   "rabbitmq-task",
+  //   serviceDiscovery,
+  //   namespaceId
+  // );
+  // await makeClickhouseService(
+  //   ecsClient,
+  //   clickhouseEfsId,
+  //   "clickhouse-task",
+  //   serviceDiscovery,
+  //   namespaceId
+  // );
+  // await makeAgentApiService(
+  //   ecsClient,
+  //   "agent-api-task",
+  //   serviceDiscovery,
+  //   namespaceId
+  // );
+  await makeSessionEnderService(
+    ecsClient,
+    "session_ender-task",
+    serviceDiscovery,
+    namespaceId
+  );
+  await makeReplayerService(
+    ecsClient,
+    "replayer-task",
+    serviceDiscovery,
+    namespaceId
   );
 
-  console.log("Done.");
-
-  console.log("Creating and initializing Postgres EFS mount target...");
-
-  await efsClient.createMountTarget({
-    FileSystemId: postgresEfsId,
-    SubnetId: process.env.AWS_SUBNET_ID,
-    SecurityGroups: [process.env.AWS_SECURITY_GROUP_ID],
-  });
-
-  await waitFor(
-    efsClient.describeMountTargets.bind(efsClient),
-    {
-      FileSystemId: postgresEfsId,
-      MaxItems: 1,
-    },
-    "mountTargetAvailable",
-    "available",
-    2
-  );
-
-  console.log("Done.");
-
-  console.log("Creating and initializing Clickhouse EFS...");
-
-  const clickhouseEfs = await efsClient.createFileSystem({});
-  const clickhouseEfsId = clickhouseEfs.FileSystemId;
-
-  await waitFor(
-    efsClient.describeFileSystems.bind(efsClient),
-    {
-      FileSystemId: clickhouseEfsId,
-    },
-    "fileSystemAvailable",
-    "available"
-  );
-
-  console.log("Done.");
-
-  console.log("Creating and initializing Clickhouse EFS mount target...");
-
-  await efsClient.createMountTarget({
-    FileSystemId: clickhouseEfsId,
-    SubnetId: process.env.AWS_SUBNET_ID,
-    SecurityGroups: [process.env.AWS_SECURITY_GROUP_ID],
-  });
-
-  await waitFor(
-    efsClient.describeMountTargets.bind(efsClient),
-    {
-      FileSystemId: clickhouseEfsId,
-      MaxItems: 1,
-    },
-    "mountTargetAvailable",
-    "available",
-    2
-  );
-
-  console.log("Done.");
-
-  await makePostgresService(ecsClient, postgresEfsId, "postgres-task");
-  await makeRabbitmqService(ecsClient, "rabbitmq-task");
-  await makeClickhouseService(ecsClient, clickhouseEfsId, "clickhouse-task");
-  await makeAgentApiService(ecsClient, "agent-api-task");
-  await makeSessionEnderService(ecsClient, "session_ender-task");
-  await makeReplayerService(ecsClient, "replayer-task");
-
-  console.log("Bard deployed.");
+  console.log("\n\nBard deployed successfully! 🎉 🎉 🎉\n\n");
+  return;
 };
 
 main();

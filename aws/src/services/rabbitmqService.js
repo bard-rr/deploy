@@ -1,8 +1,13 @@
-import { waitFor } from "./utils.js";
+import { waitFor, getOrCreateDiscoveryService } from "./utils.js";
 import dotenv from "dotenv";
 dotenv.config();
 
-export const makeRabbitmqService = async (ecs, taskName) => {
+export const makeRabbitmqService = async (
+  ecs,
+  taskName,
+  serviceDiscoveryClient,
+  namespaceId
+) => {
   await ecs.registerTaskDefinition({
     family: taskName,
     //TODO: Does this task exist by default?
@@ -62,13 +67,19 @@ export const makeRabbitmqService = async (ecs, taskName) => {
     ],
   });
   console.log("created the rabbitmq task");
+  let discoveryServiceArn = await getOrCreateDiscoveryService(
+    serviceDiscoveryClient,
+    namespaceId,
+    "rabbitmq"
+  );
+
+  console.log("rabbitmq discovery service Arn obtained", discoveryServiceArn);
 
   let serviceOutput = await ecs.createService({
     taskDefinition: taskName,
     serviceRegistries: [
       {
-        registryArn:
-          "arn:aws:servicediscovery:us-east-1:855374076712:service/srv-bwl77smjs22fg4np",
+        registryArn: discoveryServiceArn,
       },
     ],
     serviceName: "rabbitmq",

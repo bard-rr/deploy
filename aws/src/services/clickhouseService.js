@@ -1,8 +1,14 @@
-import { waitFor } from "./utils.js";
+import { waitFor, getOrCreateDiscoveryService } from "./utils.js";
 import dotenv from "dotenv";
 dotenv.config();
 
-export const makeClickhouseService = async (ecs, fileSystemId, taskName) => {
+export const makeClickhouseService = async (
+  ecs,
+  fileSystemId,
+  taskName,
+  serviceDiscoveryClient,
+  namespaceId
+) => {
   await ecs.registerTaskDefinition({
     family: taskName,
     //TODO: Does this task exist by default?
@@ -76,12 +82,19 @@ export const makeClickhouseService = async (ecs, fileSystemId, taskName) => {
   });
   console.log("created the clickhouse task");
 
+  let discoveryServiceArn = await getOrCreateDiscoveryService(
+    serviceDiscoveryClient,
+    namespaceId,
+    "clickhouse"
+  );
+
+  console.log("clickhouse discovery service Arn obtained", discoveryServiceArn);
+
   let serviceOutput = await ecs.createService({
     taskDefinition: taskName,
     serviceRegistries: [
       {
-        registryArn:
-          "arn:aws:servicediscovery:us-east-1:855374076712:service/srv-v4vby67rnthp22na",
+        registryArn: discoveryServiceArn,
       },
     ],
     serviceName: "clickhouse",

@@ -1,8 +1,13 @@
-import { waitFor } from "./utils.js";
+import { getOrCreateDiscoveryService, waitFor } from "./utils.js";
 import dotenv from "dotenv";
 dotenv.config();
 
-export const makeReplayerService = async (ecs, taskName) => {
+export const makeReplayerService = async (
+  ecs,
+  taskName,
+  serviceDiscoveryClient,
+  namespaceId
+) => {
   await ecs.registerTaskDefinition({
     family: taskName,
     //TODO: Does this task exist by default?
@@ -67,12 +72,19 @@ export const makeReplayerService = async (ecs, taskName) => {
   });
   console.log("created the replayer task");
 
+  let discoveryServiceArn = await getOrCreateDiscoveryService(
+    serviceDiscoveryClient,
+    namespaceId,
+    "replayer"
+  );
+
+  console.log("replayer discovery service Arn obtained", discoveryServiceArn);
+
   let serviceOutput = await ecs.createService({
     taskDefinition: taskName,
     serviceRegistries: [
       {
-        registryArn:
-          "arn:aws:servicediscovery:us-east-1:855374076712:service/srv-zcrw3r5lhjyyg4tu",
+        registryArn: discoveryServiceArn,
       },
     ],
     serviceName: "replayer",
