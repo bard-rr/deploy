@@ -11,6 +11,17 @@ import { waitFor } from "./services/utils.js";
 
 dotenv.config();
 
+/*
+  Nino's old variables
+    AWS_VPC_ID="vpc-0bcc662d0027a013b"
+    AWS_SUBNET_ID="subnet-08e97a8a4d3098617"
+    AWS_SECURITY_GROUP_ID="sg-0d105c4a0fc827061"
+
+  Marcin's old variables
+    AWS_SUBNET_ID=subnet-07a5d4615304da5e5
+    AWS_SECURITY_GROUP_ID=sg-01167299cc4f4f23c
+*/
+
 const main = async () => {
   const ecsClient = new ECS({
     region: "us-east-1",
@@ -28,7 +39,7 @@ const main = async () => {
     },
   });
 
-  console.log('Creating cluster...');
+  console.log("Creating cluster...");
 
   await ecsClient.createCluster({
     capacityProviders: ["FARGATE", "FARGATE_SPOT"],
@@ -37,7 +48,7 @@ const main = async () => {
 
   console.log("Done.");
 
-  console.log('Creating and initializing Postgres EFS...');
+  console.log("Creating and initializing Postgres EFS...");
 
   const postgresEfs = await efsClient.createFileSystem({});
   const postgresEfsId = postgresEfs.FileSystemId;
@@ -57,8 +68,8 @@ const main = async () => {
 
   await efsClient.createMountTarget({
     FileSystemId: postgresEfsId,
-    SubnetId: "subnet-07a5d4615304da5e5",
-    SecurityGroups: ["sg-01167299cc4f4f23c"],
+    SubnetId: process.env.AWS_SUBNET_ID,
+    SecurityGroups: [process.env.AWS_SECURITY_GROUP_ID],
   });
 
   await waitFor(
@@ -74,7 +85,7 @@ const main = async () => {
 
   console.log("Done.");
 
-  console.log('Creating and initializing Clickhouse EFS...');
+  console.log("Creating and initializing Clickhouse EFS...");
 
   const clickhouseEfs = await efsClient.createFileSystem({});
   const clickhouseEfsId = clickhouseEfs.FileSystemId;
@@ -94,8 +105,8 @@ const main = async () => {
 
   await efsClient.createMountTarget({
     FileSystemId: clickhouseEfsId,
-    SubnetId: "subnet-07a5d4615304da5e5",
-    SecurityGroups: ["sg-01167299cc4f4f23c"],
+    SubnetId: process.env.AWS_SUBNET_ID,
+    SecurityGroups: [process.env.AWS_SECURITY_GROUP_ID],
   });
 
   await waitFor(

@@ -1,4 +1,6 @@
 import { waitFor } from "./utils.js";
+import dotenv from "dotenv";
+dotenv.config();
 
 export const makeClickhouseService = async (ecs, fileSystemId, taskName) => {
   await ecs.registerTaskDefinition({
@@ -25,10 +27,6 @@ export const makeClickhouseService = async (ecs, fileSystemId, taskName) => {
           },
         ],
         mountPoints: [
-          // {
-          //   sourceVolume: "initCh",
-          //   containerPath: "/docker-entrypoint-initdb.d",
-          // },
           {
             sourceVolume: "persistCh",
             containerPath: "/var/lib/clickhouse/",
@@ -44,16 +42,9 @@ export const makeClickhouseService = async (ecs, fileSystemId, taskName) => {
             "awslogs-stream-prefix": "ecs",
           },
         },
-        // environment: [{ name: "ALLOW_EMPTY_PASSWORD", value: "yes" }],
       },
     ],
     volumes: [
-      // {
-      //   name: "initCh",
-      //   efsVolumeConfiguration: {
-      //     fileSystemId,
-      //   },
-      // },
       {
         name: "persistCh",
         efsVolumeConfiguration: {
@@ -89,8 +80,9 @@ export const makeClickhouseService = async (ecs, fileSystemId, taskName) => {
     taskDefinition: taskName,
     serviceRegistries: [
       {
-        registryArn: "arn:aws:servicediscovery:us-east-1:855374076712:service/srv-v4vby67rnthp22na",
-      }
+        registryArn:
+          "arn:aws:servicediscovery:us-east-1:855374076712:service/srv-v4vby67rnthp22na",
+      },
     ],
     serviceName: "clickhouse",
     cluster: "bard-cluster",
@@ -106,8 +98,8 @@ export const makeClickhouseService = async (ecs, fileSystemId, taskName) => {
     },
     networkConfiguration: {
       awsvpcConfiguration: {
-        subnets: ["subnet-07a5d4615304da5e5"],
-        securityGroups: ["sg-01167299cc4f4f23c"],
+        subnets: [process.env.AWS_SUBNET_ID],
+        securityGroups: [process.env.AWS_SECURITY_GROUP_ID],
         assignPublicIp: "ENABLED",
       },
     },
