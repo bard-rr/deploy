@@ -74,106 +74,106 @@ const main = async () => {
 
   console.log("Done.");
 
-  // console.log("Creating and initializing Postgres EFS...");
+  console.log("Creating and initializing Postgres EFS...");
 
-  // const postgresEfs = await efsClient.createFileSystem({});
-  // const postgresEfsId = postgresEfs.FileSystemId;
+  const postgresEfs = await efsClient.createFileSystem({});
+  const postgresEfsId = postgresEfs.FileSystemId;
 
-  // await waitFor(
-  //   efsClient.describeFileSystems.bind(efsClient),
-  //   {
-  //     FileSystemId: postgresEfsId,
-  //   },
-  //   "fileSystemAvailable",
-  //   "available"
-  // );
+  await waitFor(
+    efsClient.describeFileSystems.bind(efsClient),
+    {
+      FileSystemId: postgresEfsId,
+    },
+    "fileSystemAvailable",
+    "available"
+  );
 
-  // console.log("Done.");
+  console.log("Done.");
 
-  // console.log("Creating and initializing Postgres EFS mount target...");
+  console.log("Creating and initializing Postgres EFS mount target...");
 
-  // await efsClient.createMountTarget({
-  //   FileSystemId: postgresEfsId,
-  //   SubnetId: process.env.AWS_SUBNET_ID,
-  //   SecurityGroups: [process.env.AWS_SECURITY_GROUP_ID],
-  // });
+  await efsClient.createMountTarget({
+    FileSystemId: postgresEfsId,
+    SubnetId: process.env.AWS_SUBNET_ID,
+    SecurityGroups: [process.env.AWS_SECURITY_GROUP_ID],
+  });
 
-  // await waitFor(
-  //   efsClient.describeMountTargets.bind(efsClient),
-  //   {
-  //     FileSystemId: postgresEfsId,
-  //     MaxItems: 1,
-  //   },
-  //   "mountTargetAvailable",
-  //   "available",
-  //   2
-  // );
+  await waitFor(
+    efsClient.describeMountTargets.bind(efsClient),
+    {
+      FileSystemId: postgresEfsId,
+      MaxItems: 1,
+    },
+    "mountTargetAvailable",
+    "available",
+    2
+  );
 
-  // console.log("Done.");
+  console.log("Done.");
 
-  // console.log("Creating and initializing Clickhouse EFS...");
+  console.log("Creating and initializing Clickhouse EFS...");
 
-  // const clickhouseEfs = await efsClient.createFileSystem({});
-  // const clickhouseEfsId = clickhouseEfs.FileSystemId;
+  const clickhouseEfs = await efsClient.createFileSystem({});
+  const clickhouseEfsId = clickhouseEfs.FileSystemId;
 
-  // await waitFor(
-  //   efsClient.describeFileSystems.bind(efsClient),
-  //   {
-  //     FileSystemId: clickhouseEfsId,
-  //   },
-  //   "fileSystemAvailable",
-  //   "available"
-  // );
+  await waitFor(
+    efsClient.describeFileSystems.bind(efsClient),
+    {
+      FileSystemId: clickhouseEfsId,
+    },
+    "fileSystemAvailable",
+    "available"
+  );
 
-  // console.log("Done.");
+  console.log("Done.");
 
-  // console.log("Creating and initializing Clickhouse EFS mount target...");
+  console.log("Creating and initializing Clickhouse EFS mount target...");
 
-  // await efsClient.createMountTarget({
-  //   FileSystemId: clickhouseEfsId,
-  //   SubnetId: process.env.AWS_SUBNET_ID,
-  //   SecurityGroups: [process.env.AWS_SECURITY_GROUP_ID],
-  // });
+  await efsClient.createMountTarget({
+    FileSystemId: clickhouseEfsId,
+    SubnetId: process.env.AWS_SUBNET_ID,
+    SecurityGroups: [process.env.AWS_SECURITY_GROUP_ID],
+  });
 
-  // await waitFor(
-  //   efsClient.describeMountTargets.bind(efsClient),
-  //   {
-  //     FileSystemId: clickhouseEfsId,
-  //     MaxItems: 1,
-  //   },
-  //   "mountTargetAvailable",
-  //   "available",
-  //   2
-  // );
+  await waitFor(
+    efsClient.describeMountTargets.bind(efsClient),
+    {
+      FileSystemId: clickhouseEfsId,
+      MaxItems: 1,
+    },
+    "mountTargetAvailable",
+    "available",
+    2
+  );
 
-  // console.log("Done.");
+  console.log("Done.");
 
-  // await makePostgresService(
-  //   ecsClient,
-  //   postgresEfsId,
-  //   "postgres-task",
-  //   serviceDiscovery,
-  //   namespaceId
-  // );
-  // await makeRabbitmqService(
-  //   ecsClient,
-  //   "rabbitmq-task",
-  //   serviceDiscovery,
-  //   namespaceId
-  // );
-  // await makeClickhouseService(
-  //   ecsClient,
-  //   clickhouseEfsId,
-  //   "clickhouse-task",
-  //   serviceDiscovery,
-  //   namespaceId
-  // );
-  // await makeAgentApiService(
-  //   ecsClient,
-  //   "agent-api-task",
-  //   serviceDiscovery,
-  //   namespaceId
-  // );
+  await makePostgresService(
+    ecsClient,
+    postgresEfsId,
+    "postgres-task",
+    serviceDiscovery,
+    namespaceId
+  );
+  await makeRabbitmqService(
+    ecsClient,
+    "rabbitmq-task",
+    serviceDiscovery,
+    namespaceId
+  );
+  await makeClickhouseService(
+    ecsClient,
+    clickhouseEfsId,
+    "clickhouse-task",
+    serviceDiscovery,
+    namespaceId
+  );
+  await makeAgentApiService(
+    ecsClient,
+    "agent-api-task",
+    serviceDiscovery,
+    namespaceId
+  );
   await makeSessionEnderService(
     ecsClient,
     "session_ender-task",
