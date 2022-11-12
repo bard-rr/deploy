@@ -8,6 +8,7 @@ export const makeAgentApiService = async (
   serviceDiscoveryClient,
   namespaceId
 ) => {
+  console.log("Starting work on the agent-api");
   await ecs.registerTaskDefinition({
     family: taskName,
     //TODO: Does this task exist by default?
@@ -76,7 +77,6 @@ export const makeAgentApiService = async (
       },
     ],
   });
-  console.log("created the agent-api task");
 
   let discoveryServiceArn = await getOrCreateDiscoveryService(
     serviceDiscoveryClient,
@@ -84,8 +84,9 @@ export const makeAgentApiService = async (
     "agent-api"
   );
 
-  console.log("agent-api discovery service Arn obtained", discoveryServiceArn);
+  console.log("Agent-api discovery service Arn obtained", discoveryServiceArn);
 
+  console.log("Creating the agent-api ECS Service");
   let serviceOutput = await ecs.createService({
     taskDefinition: taskName,
     serviceRegistries: [
@@ -113,8 +114,8 @@ export const makeAgentApiService = async (
       },
     },
   });
-  console.log("created the agent-api-service");
-  console.log("waiting for the agent-api-service to start");
+  console.log("Done.");
+  console.log("Waiting for the agent-api-service to start");
   await waitFor(
     ecs.describeServices.bind(ecs),
     {
@@ -124,8 +125,8 @@ export const makeAgentApiService = async (
     "serviceActive",
     "ACTIVE"
   );
-  console.log("agent-api-service started successfully!");
-  console.log("waiting for task to be created");
+  console.log("Done.");
+  console.log("waiting for the agent-api task to be created");
   let taskList = await waitFor(
     ecs.listTasks.bind(ecs),
     {
@@ -136,8 +137,8 @@ export const makeAgentApiService = async (
     "taskCreated",
     true
   );
-  console.log("task created!");
-  console.log("waiting for the agent-api task to start.");
+  console.log("Done.");
+  console.log("Waiting for the agent-api task to start.");
   await waitFor(
     ecs.describeTasks.bind(ecs),
     {
@@ -147,5 +148,5 @@ export const makeAgentApiService = async (
     "taskRunning",
     "RUNNING"
   );
-  console.log("agent-api task running!");
+  console.log("Done.");
 };

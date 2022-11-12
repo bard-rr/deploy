@@ -9,6 +9,7 @@ export const makeClickhouseService = async (
   serviceDiscoveryClient,
   namespaceId
 ) => {
+  console.log("Starting work on Clickhouse.");
   await ecs.registerTaskDefinition({
     family: taskName,
     //TODO: Does this task exist by default?
@@ -18,8 +19,8 @@ export const makeClickhouseService = async (
     containerDefinitions: [
       {
         // image: "clickhouse/clickhouse-server",
-        image: "bardrr/clickhouse",
-        // image: "bardrr/clickhouse:test",
+        //image: "bardrr/clickhouse",
+        image: "bardrr/clickhouse:test",
         name: "clickhouse",
         //TODO: need a better value for this
         memoryReservation: null,
@@ -80,7 +81,6 @@ export const makeClickhouseService = async (
       },
     ],
   });
-  console.log("created the clickhouse task");
 
   let discoveryServiceArn = await getOrCreateDiscoveryService(
     serviceDiscoveryClient,
@@ -88,8 +88,8 @@ export const makeClickhouseService = async (
     "clickhouse"
   );
 
-  console.log("clickhouse discovery service Arn obtained", discoveryServiceArn);
-
+  console.log("Clickhouse discovery service Arn obtained", discoveryServiceArn);
+  console.log("Creating the Clickhouse ECS Service.");
   let serviceOutput = await ecs.createService({
     taskDefinition: taskName,
     serviceRegistries: [
@@ -117,8 +117,8 @@ export const makeClickhouseService = async (
       },
     },
   });
-  console.log("created the clickhouse service");
-  console.log("waiting for the clickhouse service to start");
+  console.log("Done.");
+  console.log("Waiting for the Clickhouse service to start.");
   await waitFor(
     ecs.describeServices.bind(ecs),
     {
@@ -128,8 +128,8 @@ export const makeClickhouseService = async (
     "serviceActive",
     "ACTIVE"
   );
-  console.log("clickhouse service started successfully!");
-  console.log("waiting for task to be created");
+  console.log("Done.");
+  console.log("Waiting for the Clickhouse task to be created.");
   let taskList = await waitFor(
     ecs.listTasks.bind(ecs),
     {
@@ -140,8 +140,8 @@ export const makeClickhouseService = async (
     "taskCreated",
     true
   );
-  console.log("task created!");
-  console.log("waiting for the clickhouse task to start.");
+  console.log("Done.");
+  console.log("Waiting for the Clickhouse task to start.");
   await waitFor(
     ecs.describeTasks.bind(ecs),
     {
@@ -151,5 +151,5 @@ export const makeClickhouseService = async (
     "taskRunning",
     "RUNNING"
   );
-  console.log("clickhouse task running!");
+  console.log("Done.");
 };

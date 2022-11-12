@@ -24,7 +24,6 @@ export const waitFor = async (fn, fnArgs, valType, desiredVal, depth = 0) => {
       return;
   }
   if (resVal === desiredVal) {
-    console.log("resVal", resVal, "desired Val", desiredVal);
     //we have what we want
     return result;
   } else {
@@ -42,7 +41,9 @@ export const getOrCreateDiscoveryService = async (
   namespaceId,
   serviceName
 ) => {
-  console.log(`searching for existing discovery services named ${serviceName}`);
+  console.log(
+    `Searching for existing discovery services named ${serviceName}.`
+  );
   let existingServices = await serviceDiscovery.listServices({
     MaxResults: 10,
     Filters: [
@@ -52,16 +53,14 @@ export const getOrCreateDiscoveryService = async (
       },
     ],
   });
-  //console.log("existing services", existingServices);
   let wantedService = existingServices.Services.find(
     (service) => service.Name === serviceName
   );
-  //console.log("wanted service", wantedService);
   if (wantedService) {
-    console.log(`found existing discovery service for ${serviceName}`);
+    console.log(`Sound existing discovery service for ${serviceName}.`);
     return wantedService.Arn;
   } else {
-    console.log(`no discovery service found for ${serviceName}. creating one.`);
+    console.log(`No discovery service found for ${serviceName}. Creating one.`);
     let newService = await serviceDiscovery.createService({
       Name: serviceName,
       NamespaceId: namespaceId,

@@ -9,6 +9,7 @@ export const makePostgresService = async (
   serviceDiscoveryClient,
   namespaceId
 ) => {
+  console.log("Starting work on Postgres");
   await ecs.registerTaskDefinition({
     family: taskName,
     //TODO: Does this task exist by default?
@@ -95,7 +96,6 @@ export const makePostgresService = async (
       },
     ],
   });
-  console.log("created the postgres task");
 
   let discoveryServiceArn = await getOrCreateDiscoveryService(
     serviceDiscoveryClient,
@@ -103,8 +103,8 @@ export const makePostgresService = async (
     "postgres"
   );
 
-  console.log("postgres discovery service Arn obtained", discoveryServiceArn);
-
+  console.log("Postgres discovery service Arn obtained", discoveryServiceArn);
+  console.log("Creating the Postgres ECS Service.");
   let serviceOutput = await ecs.createService({
     taskDefinition: taskName,
     serviceRegistries: [
@@ -132,8 +132,8 @@ export const makePostgresService = async (
       },
     },
   });
-  console.log("created the postgres service");
-  console.log("waiting for the postgres service to start");
+  console.log("Done.");
+  console.log("Waiting for the Postgres service to start.");
   await waitFor(
     ecs.describeServices.bind(ecs),
     {
@@ -143,8 +143,8 @@ export const makePostgresService = async (
     "serviceActive",
     "ACTIVE"
   );
-  console.log("postgres service started successfully!");
-  console.log("waiting for task to be created");
+  console.log("Done.");
+  console.log("Waiting for the Postgres task to be created.");
   let taskList = await waitFor(
     ecs.listTasks.bind(ecs),
     {
@@ -155,8 +155,8 @@ export const makePostgresService = async (
     "taskCreated",
     true
   );
-  console.log("task created!");
-  console.log("waiting for the postgres task to start.");
+  console.log("Done.");
+  console.log("Waiting for the Postgres task to start.");
   await waitFor(
     ecs.describeTasks.bind(ecs),
     {
@@ -166,5 +166,5 @@ export const makePostgresService = async (
     "taskRunning",
     "RUNNING"
   );
-  console.log("postgres task running!");
+  console.log("Done.");
 };

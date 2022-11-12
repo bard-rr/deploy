@@ -13,6 +13,7 @@ import { waitFor } from "./services/utils.js";
 dotenv.config();
 
 /*
+  TO DELETE
   Nino's old variables
     AWS_VPC_ID="vpc-0bcc662d0027a013b"
     AWS_SUBNET_ID="subnet-08e97a8a4d3098617"
@@ -55,7 +56,7 @@ const main = async () => {
     ],
   });
   let namespaceId = namespaceList.Namespaces[0].Id;
-  console.log("namespace created");
+  console.log("Service Discovery Namespace created");
 
   const efsClient = new EFS({
     region: "us-east-1",
@@ -65,7 +66,7 @@ const main = async () => {
     },
   });
 
-  console.log("Creating cluster...");
+  console.log("Creating ECS cluster...");
 
   await ecsClient.createCluster({
     capacityProviders: ["FARGATE", "FARGATE_SPOT"],

@@ -8,6 +8,7 @@ export const makeRabbitmqService = async (
   serviceDiscoveryClient,
   namespaceId
 ) => {
+  console.log("Starting work on Rabbitmq.");
   await ecs.registerTaskDefinition({
     family: taskName,
     //TODO: Does this task exist by default?
@@ -66,15 +67,15 @@ export const makeRabbitmqService = async (
       },
     ],
   });
-  console.log("created the rabbitmq task");
+
   let discoveryServiceArn = await getOrCreateDiscoveryService(
     serviceDiscoveryClient,
     namespaceId,
     "rabbitmq"
   );
 
-  console.log("rabbitmq discovery service Arn obtained", discoveryServiceArn);
-
+  console.log("Rabbitmq discovery service Arn obtained", discoveryServiceArn);
+  console.log("Creating the Rabbitmq ECS Service.");
   let serviceOutput = await ecs.createService({
     taskDefinition: taskName,
     serviceRegistries: [
@@ -102,8 +103,8 @@ export const makeRabbitmqService = async (
       },
     },
   });
-  console.log("created the rabbitmq service");
-  console.log("waiting for the rabbitmq service to start");
+  console.log("Done.");
+  console.log("waiting for the Rabbitmq service to start");
   await waitFor(
     ecs.describeServices.bind(ecs),
     {
@@ -113,8 +114,8 @@ export const makeRabbitmqService = async (
     "serviceActive",
     "ACTIVE"
   );
-  console.log("rabbitmq service started successfully!");
-  console.log("waiting for task to be created");
+  console.log("Done.");
+  console.log("Waiting for the Rabbitmq task to be created");
   let taskList = await waitFor(
     ecs.listTasks.bind(ecs),
     {
@@ -125,8 +126,8 @@ export const makeRabbitmqService = async (
     "taskCreated",
     true
   );
-  console.log("task created!");
-  console.log("waiting for the rabbitmq task to start.");
+  console.log("Done.");
+  console.log("Waiting for the Rabbitmq task to start.");
   await waitFor(
     ecs.describeTasks.bind(ecs),
     {
@@ -136,5 +137,5 @@ export const makeRabbitmqService = async (
     "taskRunning",
     "RUNNING"
   );
-  console.log("rabbitmq task running!");
+  console.log("Done.");
 };
