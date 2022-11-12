@@ -1,3 +1,7 @@
+<img src="https://github.com/bard-rr/.github/blob/main/profile/logo2.png?raw=true" width="300">
+
 # deploy
 
-This is a branch made from the `working` branch. I'll be performing load tests on the docker compose config AND on the aws config. Any tweaks that need to be made to the configuration will be made on this branch.
+This reploy allows you to deploy the entire Bard infrastructure either as docker containers using the docker-compose.yml or on Amazon Fargate using the
+build file. Also included is the initialization scripts for the clickhouse and postgres databases.
+
