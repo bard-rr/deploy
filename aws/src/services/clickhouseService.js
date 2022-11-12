@@ -18,9 +18,7 @@ export const makeClickhouseService = async (
     requiresCompatibilities: ["FARGATE"],
     containerDefinitions: [
       {
-        // image: "clickhouse/clickhouse-server",
-        //image: "bardrr/clickhouse",
-        image: "bardrr/clickhouse:test",
+        image: "bardrr/clickhouse",
         name: "clickhouse",
         //TODO: need a better value for this
         memoryReservation: null,
@@ -37,7 +35,6 @@ export const makeClickhouseService = async (
           {
             sourceVolume: "persistCh",
             containerPath: "/var/lib/clickhouse/",
-            // containerPath: "/bitnami/clickhouse",
           },
         ],
         logConfiguration: {
