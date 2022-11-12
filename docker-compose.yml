@@ -35,6 +35,7 @@ services:
       - ch:/var/lib/clickhouse/
       - ch_logs:/val/log/clickhouse-server/
       - ./clickhouse_initialization_scripts:/docker-entrypoint-initdb.d
+      - ./clickhouse_server_config/config.xml:/etc/clickhouse-server/config.xml
   postgres:
     container_name: postgres
     image: postgres:15
