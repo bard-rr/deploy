@@ -41,11 +41,26 @@ const main = async () => {
       secretAccessKey: process.env.AWS_SECRET_KEY,
     },
   });
+  console.log("Creating and initializing service doscovery namespace.");
   await serviceDiscovery.createPrivateDnsNamespace({
     Name: NAMESPACE_NAME,
     //TODO: how to get this programatically?
     Vpc: process.env.AWS_VPC_ID,
   });
+  await waitFor(
+    serviceDiscovery.listNamespaces.bind(serviceDiscovery),
+    {
+      MaxResults: 1,
+      Filters: [
+        {
+          Name: "NAME",
+          Values: [NAMESPACE_NAME],
+        },
+      ],
+    },
+    "namespaceInitialized",
+    true
+  );
   let namespaceList = await serviceDiscovery.listNamespaces({
     MaxResults: 1,
     Filters: [
