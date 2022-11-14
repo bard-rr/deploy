@@ -27,7 +27,7 @@ dotenv.config();
 const main = async () => {
   const NAMESPACE_NAME = "bard";
   const ecsClient = new ECS({
-    region: "us-east-1",
+    region: process.env.AWS_REGION_NAME,
     credentials: {
       accessKeyId: process.env.AWS_ACCESS_KEY,
       secretAccessKey: process.env.AWS_SECRET_KEY,
@@ -35,17 +35,32 @@ const main = async () => {
   });
 
   let serviceDiscovery = new ServiceDiscovery({
-    region: "us-east-1",
+    region: process.env.AWS_REGION_NAME,
     credentials: {
       accessKeyId: process.env.AWS_ACCESS_KEY,
       secretAccessKey: process.env.AWS_SECRET_KEY,
     },
   });
+  console.log("Creating and initializing service doscovery namespace.");
   await serviceDiscovery.createPrivateDnsNamespace({
     Name: NAMESPACE_NAME,
     //TODO: how to get this programatically?
     Vpc: process.env.AWS_VPC_ID,
   });
+  await waitFor(
+    serviceDiscovery.listNamespaces.bind(serviceDiscovery),
+    {
+      MaxResults: 1,
+      Filters: [
+        {
+          Name: "NAME",
+          Values: [NAMESPACE_NAME],
+        },
+      ],
+    },
+    "namespaceInitialized",
+    true
+  );
   let namespaceList = await serviceDiscovery.listNamespaces({
     MaxResults: 1,
     Filters: [
@@ -59,7 +74,7 @@ const main = async () => {
   console.log("Service Discovery Namespace created");
 
   const efsClient = new EFS({
-    region: "us-east-1",
+    region: process.env.AWS_REGION_NAME,
     credentials: {
       accessKeyId: process.env.AWS_ACCESS_KEY,
       secretAccessKey: process.env.AWS_SECRET_KEY,

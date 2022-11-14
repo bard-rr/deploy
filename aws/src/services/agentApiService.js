@@ -49,7 +49,7 @@ export const makeAgentApiService = async (
           secretOptions: null,
           options: {
             "awslogs-group": "/ecs/test_logged_task",
-            "awslogs-region": "us-east-1",
+            "awslogs-region": process.env.AWS_REGION_NAME,
             "awslogs-stream-prefix": "ecs",
           },
         },

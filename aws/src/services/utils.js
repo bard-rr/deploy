@@ -19,7 +19,9 @@ export const waitFor = async (fn, fnArgs, valType, desiredVal, depth = 0) => {
     case "taskCreated":
       resVal = result.taskArns.length !== 0;
       break;
-
+    case "Initialized":
+      resVal = result.Namespaces.length !== 0;
+      break;
     default:
       return;
   }

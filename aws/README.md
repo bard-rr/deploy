@@ -19,6 +19,7 @@ AWS_ACCESS_KEY
 AWS_SECRET_KEY
 AWS_VPC_ID
 AWS_SUBNET_ID
+AWS_REGION_NAME
 AWS_SECURITY_GROUP_ID
 ```
 
@@ -32,6 +33,10 @@ AWS_SECURITY_GROUP_ID
 ### VPC and Subnet
 
 `AWS_VPC_ID` and `AWS_SUBNET_ID` are the IDs of the Virtual Private Cloud (VPC) and subnet that the AWS resources will be created in. [See here](https://docs.aws.amazon.com/directoryservice/latest/admin-guide/gsg_create_vpc.html) for details on creating a VPC with a single public subnet. Once the VPC and subnet have been created, you can find their IDs using the [AWS VPC console](https://console.aws.amazon.com/vpc/).
+
+### Region name
+
+The name of the AWS region the VPC and subnet specified above are located in. For example, `us-east-1`.
 
 ### Security Group
 
