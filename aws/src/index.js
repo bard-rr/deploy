@@ -41,7 +41,7 @@ const main = async () => {
       secretAccessKey: process.env.AWS_SECRET_KEY,
     },
   });
-  console.log("Creating and initializing service doscovery namespace.");
+  console.log("Creating and initializing service discovery namespace.");
   await serviceDiscovery.createPrivateDnsNamespace({
     Name: NAMESPACE_NAME,
     //TODO: how to get this programatically?
