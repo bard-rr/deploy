@@ -2,7 +2,7 @@
 
 # AWS Deployment Script
 
-This script will deploy a containerized version of Bard to Amazon's Elastic Container Service (ECS). This solution allows for an easy deployment of Bard that scales well thanks to the managed cloud technology offered by AWS.
+This script will deploy a containerized version of Bard to Amazon's Elastic Container Service (ECS). This solution allows for a cloud deployment of Bard that's easeier to manage, thanks to the technology offered by AWS.
 
 ## Setting up the script
 
@@ -40,7 +40,7 @@ The name of the AWS region the VPC and subnet specified above are located in. Fo
 
 ### Security Group
 
-`AWS_SECURITY_GROUP_ID` is the ID of the security group that will be associated with the AWS resources the script creates. Among other things, Security Groups control how services within the AWS Cloud are able to communicate with each other. This script will apply the same security group to all components it creates; the script will only work if the security group allows communication for http over all ports. **Note that this is NOT a secure configuration:** we recommend configuring security groups according to AWS best practices once the app is running. [See here](https://docs.aws.amazon.com/vpc/latest/userguide/VPC_SecurityGroups.html) for more information on creating and working with security groups.
+`AWS_SECURITY_GROUP_ID` is the ID of the security group that will be associated with the AWS resources the script creates. Among other things, Security Groups control how services within the AWS Cloud are able to communicate with each other. This script will apply the same security group to all components it creates, and the script will only work if the security group allows communication for http over all ports. **Note that this is NOT a secure configuration:** we recommend configuring security groups according to AWS best practices once the app is running. [See here](https://docs.aws.amazon.com/vpc/latest/userguide/VPC_SecurityGroups.html) for more information on creating and working with security groups.
 
 ## Running the Script
 
