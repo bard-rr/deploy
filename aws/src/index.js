@@ -12,18 +12,6 @@ import { waitFor } from "./services/utils.js";
 
 dotenv.config();
 
-/*
-  TO DELETE
-  Nino's old variables
-    AWS_VPC_ID="vpc-0bcc662d0027a013b"
-    AWS_SUBNET_ID="subnet-08e97a8a4d3098617"
-    AWS_SECURITY_GROUP_ID="sg-0d105c4a0fc827061"
-
-  Marcin's old variables
-    AWS_SUBNET_ID=subnet-07a5d4615304da5e5
-    AWS_SECURITY_GROUP_ID=sg-01167299cc4f4f23c
-*/
-
 const main = async () => {
   const NAMESPACE_NAME = "bard";
   const ecsClient = new ECS({
@@ -44,7 +32,6 @@ const main = async () => {
   console.log("Creating and initializing service discovery namespace.");
   await serviceDiscovery.createPrivateDnsNamespace({
     Name: NAMESPACE_NAME,
-    //TODO: how to get this programatically?
     Vpc: process.env.AWS_VPC_ID,
   });
   await waitFor(
