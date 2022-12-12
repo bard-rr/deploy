@@ -50,9 +50,7 @@ services:
     restart: always
   agent-api:
     container_name: agent-api
-    # totoggle
     image: bardrr/agent-api
-    #build: ../agent-api/app
     environment:
       - PGHOST=postgres
       - PGPORT=5432
@@ -72,12 +70,9 @@ services:
         condition: service_healthy
       clickhouse:
         condition: service_healthy
-    #command: npm run dev
   session_ender:
     container_name: session_ender
-    # totoggle
     image: bardrr/session_ender:latest
-    #build: ../session_ender
     depends_on:
       postgres:
         condition: service_started
@@ -91,8 +86,6 @@ services:
       - PGDATABASE=bard
       - CLICKHOUSE_HOST=clickhouse
     restart: always
-    # totoggle
-    #command: npm run dev
   replayer:
     container_name: replayer
     image: bardrr/replayer:latest
