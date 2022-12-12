@@ -10,7 +10,6 @@ export const makeReplayerService = async (
 ) => {
   await ecs.registerTaskDefinition({
     family: taskName,
-    //TODO: Does this task exist by default?
     executionRoleArn: "ecsTaskExecutionRole",
     compatabilities: ["EC2", "FARGATE"],
     requiresCompatibilities: ["FARGATE"],
@@ -18,7 +17,6 @@ export const makeReplayerService = async (
       {
         image: "bardrr/replayer:latest",
         name: "replayer",
-        //TODO: need a better value for this
         memoryReservation: null,
         command: [],
         entryPoint: [],

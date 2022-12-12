@@ -12,17 +12,13 @@ export const makePostgresService = async (
   console.log("Starting work on Postgres");
   await ecs.registerTaskDefinition({
     family: taskName,
-    //TODO: Does this task exist by default?
     executionRoleArn: "ecsTaskExecutionRole",
     compatabilities: ["EC2", "FARGATE"],
     requiresCompatibilities: ["FARGATE"],
     containerDefinitions: [
       {
-        // image: "postgres:15",
-        // image: "bardrr/postgres",
         image: "bardrr/postgres:test",
         name: "postgres",
-        //TODO: need a better value for this
         memoryReservation: null,
         command: [],
         entryPoint: [],
@@ -47,8 +43,6 @@ export const makePostgresService = async (
           logDriver: "awslogs",
           secretOptions: null,
           options: {
-            // totoggle
-            // "awslogs-create-group": "true",
             "awslogs-group": "/ecs/test_logged_task",
             "awslogs-region": process.env.AWS_REGION_NAME,
             "awslogs-stream-prefix": "ecs",

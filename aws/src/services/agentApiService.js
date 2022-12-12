@@ -11,7 +11,6 @@ export const makeAgentApiService = async (
   console.log("Starting work on the agent-api");
   await ecs.registerTaskDefinition({
     family: taskName,
-    //TODO: Does this task exist by default?
     executionRoleArn: "ecsTaskExecutionRole",
     compatabilities: ["EC2", "FARGATE"],
     requiresCompatibilities: ["FARGATE"],
@@ -19,7 +18,6 @@ export const makeAgentApiService = async (
       {
         image: "bardrr/agent-api:latest",
         name: "agent-api",
-        //TODO: need a better value for this
         memoryReservation: null,
         command: [],
         entryPoint: [],

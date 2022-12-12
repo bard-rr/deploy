@@ -11,7 +11,6 @@ export const makeRabbitmqService = async (
   console.log("Starting work on Rabbitmq.");
   await ecs.registerTaskDefinition({
     family: taskName,
-    //TODO: Does this task exist by default?
     executionRoleArn: "ecsTaskExecutionRole",
     compatabilities: ["EC2", "FARGATE"],
     requiresCompatibilities: ["FARGATE"],
@@ -19,7 +18,6 @@ export const makeRabbitmqService = async (
       {
         image: "rabbitmq:3.11.2",
         name: "rabbitmq",
-        //TODO: need a better value for this
         memoryReservation: null,
         command: [],
         entryPoint: [],
@@ -39,11 +37,8 @@ export const makeRabbitmqService = async (
             "awslogs-stream-prefix": "ecs",
           },
         },
-        //TODO: does rabbit need volumes?
-        //mountPoints: [],
       },
     ],
-    //TODO: does rabbit need volumes?
     volumes: [],
     //these next pieces are all required by fargate
     networkMode: "awsvpc",

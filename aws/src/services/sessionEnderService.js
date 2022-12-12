@@ -11,7 +11,6 @@ export const makeSessionEnderService = async (
   console.log("Starting work for session_ender.");
   await ecs.registerTaskDefinition({
     family: taskName,
-    //TODO: Does this task exist by default?
     executionRoleArn: "ecsTaskExecutionRole",
     compatabilities: ["EC2", "FARGATE"],
     requiresCompatibilities: ["FARGATE"],
@@ -19,7 +18,6 @@ export const makeSessionEnderService = async (
       {
         image: "bardrr/session_ender:latest",
         name: "session_ender",
-        //TODO: need a better value for this
         memoryReservation: null,
         command: [],
         entryPoint: [],

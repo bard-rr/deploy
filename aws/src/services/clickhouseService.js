@@ -12,7 +12,6 @@ export const makeClickhouseService = async (
   console.log("Starting work on Clickhouse.");
   await ecs.registerTaskDefinition({
     family: taskName,
-    //TODO: Does this task exist by default?
     executionRoleArn: "ecsTaskExecutionRole",
     compatabilities: ["EC2", "FARGATE"],
     requiresCompatibilities: ["FARGATE"],
@@ -20,7 +19,6 @@ export const makeClickhouseService = async (
       {
         image: "bardrr/clickhouse",
         name: "clickhouse",
-        //TODO: need a better value for this
         memoryReservation: null,
         command: [],
         entryPoint: [],
