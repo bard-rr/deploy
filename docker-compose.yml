@@ -101,6 +101,7 @@ services:
       - PGUSER=user
       - PGPASSWORD=password
       - PGDATABASE=bard
+      - CHHOST=clickhouse
     ports:
       - "3003:3003"
 volumes:
